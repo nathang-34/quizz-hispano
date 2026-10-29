@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz hispanophone</title>
+  <meta name="description" content="Quiz sur les 20 pays hispanophones : carte, capitales, habitants et dirigeants.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="entete">
+    <h1>Quiz hispanophone</h1>
+    <p class="sous-titre">Les 20 pays où l'espagnol est langue officielle</p>
+  </header>
+
+  <main>
+    <!-- ÉCRAN 1 : RÉGLAGES -->
+    <section id="ecran-reglages" class="ecran">
+      <form id="form-reglages">
+        <fieldset>
+          <legend>Types de questions</legend>
+          <div id="choix-types" class="cases"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Mode de réponse</legend>
+          <div class="cases">
+            <label class="case"><input type="radio" name="mode" value="choix"> Choix multiple</label>
+            <label class="case"><input type="radio" name="mode" value="ecrit"> Écrire la réponse</label>
+          </div>
+          <p class="aide">Les questions de carte se font toujours en cliquant sur la carte.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Zones</legend>
+          <div id="choix-zones" class="cases"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Nombre de questions</legend>
+          <div class="segments" id="choix-nombre">
+            <label><input type="radio" name="nombre" value="10"><span>10</span></label>
+            <label><input type="radio" name="nombre" value="20"><span>20</span></label>
+            <label><input type="radio" name="nombre" value="30"><span>30</span></label>
+            <label><input type="radio" name="nombre" value="tout"><span>Tout</span></label>
+          </div>
+          <p class="aide" id="info-nombre"></p>
+        </fieldset>
+
+        <button type="submit" class="bouton principal large" id="commencer">Commencer</button>
+      </form>
+    </section>
+
+    <!-- ÉCRAN 2 : QUIZ -->
+    <section id="ecran-quiz" class="ecran" hidden>
+      <div class="barre-haut">
+        <span id="progression-texte"></span>
+        <span id="score"></span>
+      </div>
+      <div class="barre" aria-hidden="true"><div id="barre-remplie"></div></div>
+
+      <h2 id="enonce" lang="es"></h2>
+      <p id="consigne" class="aide"></p>
+
+      <img id="photo-question" class="photo" alt="Photo du chef du gouvernement" hidden>
+
+      <div id="carte" hidden>
+        <div class="segments petit" id="choix-vue">
+          <button type="button" data-vue="generale" aria-pressed="true">Vue générale</button>
+          <button type="button" data-vue="zoom" aria-pressed="false">Zoom Amérique centrale et Caraïbes</button>
+        </div>
+        <div id="carte-am" class="cadre-carte"></div>
+        <div class="encadres">
+          <figure>
+            <figcaption>Europe</figcaption>
+            <div id="carte-eu" class="cadre-carte"></div>
+          </figure>
+          <figure>
+            <figcaption>Afrique</figcaption>
+            <div id="carte-af" class="cadre-carte"></div>
+          </figure>
+        </div>
+      </div>
+
+      <div id="reponses"></div>
+
+      <div id="zone-indice">
+        <button type="button" class="bouton" id="bouton-indice">Indice</button>
+        <span class="aide">Une bonne réponse avec indice vaut 0,5 point.</span>
+        <p id="texte-indice" hidden></p>
+      </div>
+
+      <div id="correction" role="status" hidden></div>
+
+      <div class="actions">
+        <button type="button" class="bouton principal" id="suivant" hidden>Question suivante</button>
+        <button type="button" class="bouton lien" id="quitter">Quitter le quiz</button>
+      </div>
+    </section>
+
+    <!-- ÉCRAN 3 : RÉSULTATS -->
+    <section id="ecran-resultats" class="ecran" hidden>
+      <h2>Résultat</h2>
+      <p class="score-final"><span id="score-final"></span> <span id="pourcentage"></span></p>
+      <p id="message-final"></p>
+
+      <h3 id="titre-erreurs">Tes erreurs</h3>
+      <ol id="liste-erreurs"></ol>
+
+      <div class="actions colonne">
+        <button type="button" class="bouton principal" id="rejouer-erreurs">Rejouer uniquement les erreurs</button>
+        <button type="button" class="bouton" id="nouvelles-questions">Nouvelles questions</button>
+        <button type="button" class="bouton" id="modifier-reglages">Modifier les réglages</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pied">
+    Données au 27 octobre 2026. Carte : Natural Earth.
+    <details id="credits">
+      <summary>Crédits des photos</summary>
+      <p>Photos issues de Wikimedia Commons, en version réduite. Clique sur un nom pour voir la page d'origine.</p>
+      <ul id="liste-credits"></ul>
+    </details>
+  </footer>
+
+  <script src="js/pays.js"></script>
+  <script src="js/carte.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
