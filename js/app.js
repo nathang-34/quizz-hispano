@@ -255,6 +255,72 @@ const Carte = (() => {
   };
 })();
 
+/* ===== Indices ===== */
+
+// Zone indiquée pour les questions de carte (sans nommer de pays)
+const ZONES_INDICE = {
+  sur: "Amérique du Sud",
+  central: "Amérique du Nord ou Amérique centrale",
+  caribe: "Une île des Caraïbes",
+  europa_africa: "Hors du continent américain",
+};
+
+// Garde la première et la dernière lettre, remplace les autres par des tirets :
+// "Buenos Aires" devient "B _ _ _ _ _   _ _ _ _ s"
+function masquer(texte) {
+  const lettres = [...texte];
+  const derniere = lettres.length - 1;
+  return lettres
+    .map((c, i) => (c === " " ? " " : i === 0 || i === derniere ? c : "_"))
+    .join(" ");
+}
+
+function texteIndice(q) {
+  if (q.type === "mapa") return ZONES_INDICE[q.pays.zona];
+  if (q.type === "pais_dirigente") return `Prénom : ${q.pays.dirigente.split(" ")[0]}`;
+  if (q.type === "gentilicio") return q.pays.gentilicio.map(masquer).join(",   ");
+  return masquer(valeur(q.type, q.pays));
+}
+
+function utiliserIndice() {
+  if (partie.repondu || partie.indiceUtilise) return;
+  partie.indiceUtilise = true;
+  $("#bouton-indice").disabled = true;
+  const q = partie.questions[partie.index];
+
+  // Choix multiple : on élimine deux mauvaises réponses (sauf pour la carte)
+  if (partie.mode === "choix" && q.type !== "mapa") {
+    const bonne = valeur(q.type, q.pays);
+    const mauvais = [...document.querySelectorAll(".options button")].filter((b) => b.textContent !== bonne);
+    melanger(mauvais).slice(0, 2).forEach((b) => {
+      b.disabled = true;
+      b.classList.add("elimine");
+    });
+    return;
+  }
+
+  // Mode écrit (et carte) : on affiche l'indice
+  const zone = $("#texte-indice");
+  zone.innerHTML = "";
+  zone.append(el("strong", {}, "Indice : "));
+  const texte = texteIndice(q);
+  if (q.type === "mapa" || q.type === "pais_dirigente") {
+    zone.append(el("span", { lang: q.type === "mapa" ? "fr" : "es" }, texte));
+  } else {
+    // Lettres et tirets : chaque mot reste sur une seule ligne
+    const motif = el("span", { class: "motif", lang: "es" });
+    texte.split("   ").forEach((mot, i) => {
+      if (i > 0) motif.append("  ");
+      motif.append(el("span", { class: "mot" }, mot));
+    });
+    zone.append(motif);
+  }
+  zone.hidden = false;
+}
+
+// 3.5 s'affiche "3,5"
+const formaterScore = (s) => String(s).replace(".", ",");
+
 /* ===== Déroulement du quiz ===== */
 
 function lancerNouvellesQuestions() {
@@ -264,7 +330,10 @@ function lancerNouvellesQuestions() {
 }
 
 function demarrer(questions) {
-  partie = { questions, index: 0, score: 0, erreurs: [], repondu: false, mode: reglages.mode };
+  partie = {
+    questions, index: 0, score: 0, erreurs: [], repondu: false, mode: reglages.mode,
+    indiceUtilise: false, avecIndice: 0,
+  };
   afficherEcran("quiz");
   poserQuestion();
 }
@@ -273,9 +342,12 @@ function poserQuestion() {
   const q = partie.questions[partie.index];
   const n = partie.questions.length;
   partie.repondu = false;
+  partie.indiceUtilise = false;
+  $("#bouton-indice").disabled = false;
+  $("#texte-indice").hidden = true;
 
   $("#progression-texte").textContent = `Question ${partie.index + 1} sur ${n}`;
-  $("#score").textContent = `Score : ${partie.score}`;
+  $("#score").textContent = `Score : ${formaterScore(partie.score)}`;
   $("#barre-remplie").style.width = `${(partie.index / n) * 100}%`;
   $("#enonce").textContent = ENONCES[q.type](q.pays);
   $("#correction").hidden = true;
@@ -414,14 +486,24 @@ function repondre(juste, saisie) {
   partie.repondu = true;
   const q = partie.questions[partie.index];
   const n = partie.questions.length;
-  if (juste) partie.score++;
-  else partie.erreurs.push({ question: q, saisie });
+  $("#bouton-indice").disabled = true;
+  if (juste && partie.indiceUtilise) {
+    partie.score += 0.5;
+    partie.avecIndice++;
+  } else if (juste) {
+    partie.score += 1;
+  } else {
+    partie.erreurs.push({ question: q, saisie });
+  }
+
+  let titre = juste ? "Bonne réponse" : "Mauvaise réponse";
+  if (juste && partie.indiceUtilise) titre = "Bonne réponse avec indice (0,5 point)";
 
   const correction = $("#correction");
   correction.className = juste ? "ok" : "faux";
   correction.innerHTML = "";
   correction.append(
-    el("strong", {}, juste ? "Bonne réponse" : "Mauvaise réponse"),
+    el("strong", {}, titre),
     "Réponse : ",
     el("span", { lang: "es" }, bonneReponse(q.type, q.pays))
   );
@@ -431,7 +513,7 @@ function repondre(juste, saisie) {
   }
   correction.hidden = false;
 
-  $("#score").textContent = `Score : ${partie.score}`;
+  $("#score").textContent = `Score : ${formaterScore(partie.score)}`;
   $("#barre-remplie").style.width = `${((partie.index + 1) / n) * 100}%`;
   const suivant = $("#suivant");
   suivant.textContent = partie.index + 1 < n ? "Question suivante" : "Voir le résultat";
@@ -451,13 +533,16 @@ function questionSuivante() {
 function afficherResultats() {
   const n = partie.questions.length;
   const pourcentage = Math.round((partie.score / n) * 100);
-  $("#score-final").textContent = `${partie.score} / ${n}`;
+  $("#score-final").textContent = `${formaterScore(partie.score)} / ${n}`;
   $("#pourcentage").textContent = `(${pourcentage} %)`;
 
   let message = "Continue à t'entraîner, tu vas progresser.";
   if (pourcentage === 100) message = "Parfait, aucune erreur.";
+  else if (partie.erreurs.length === 0) message = "Aucune erreur. Essaie maintenant sans indice.";
   else if (pourcentage >= 80) message = "Très bien, encore quelques révisions.";
   else if (pourcentage >= 50) message = "Pas mal, rejoue tes erreurs pour les retenir.";
+  const k = partie.avecIndice;
+  if (k > 0) message += k === 1 ? " 1 bonne réponse avec indice." : ` ${k} bonnes réponses avec indice.`;
   $("#message-final").textContent = message;
 
   const liste = $("#liste-erreurs");
@@ -495,6 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
   afficherCredits();
   Carte.initialiser();
   $("#suivant").addEventListener("click", questionSuivante);
+  $("#bouton-indice").addEventListener("click", utiliserIndice);
   $("#quitter").addEventListener("click", () => afficherEcran("reglages"));
   $("#rejouer-erreurs").addEventListener("click", () => {
     demarrer(melanger(partie.erreurs.map((e) => e.question)));
