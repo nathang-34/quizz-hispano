@@ -3,17 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quiz hispanophone</title>
-  <meta name="description" content="Quiz sur les 20 pays hispanophones : carte, capitales, habitants et dirigeants.">
+  <title>Révisions d'espagnol</title>
+  <meta name="description" content="Révisions d'espagnol : quiz sur les 20 pays hispanophones et évaluations de conjugaison.">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="entete">
-    <h1>Quiz hispanophone</h1>
-    <p class="sous-titre">Les 20 pays où l'espagnol est langue officielle</p>
+  <header class="bandeau">
+    <div class="entete">
+      <div class="entete-ligne">
+        <h1>Révisions d'espagnol</h1>
+        <a href="#" class="bouton bouton-bandeau" id="bouton-menu" hidden>Menu</a>
+      </div>
+      <p class="sous-titre" id="sous-titre"></p>
+    </div>
   </header>
 
   <main>
+    <!-- MENU D'ACCUEIL -->
+    <section id="accueil" class="ecran">
+      <h2>Que veux-tu travailler ?</h2>
+      <div class="choix-accueil">
+        <a class="carte-choix choix-pays" href="#pays">
+          <div class="silhouette" id="silhouette-carte" aria-hidden="true"></div>
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.8 5.8 3.8 9s-1.2 6.2-3.8 9c-2.6-2.8-3.8-5.8-3.8-9S9.4 5.8 12 3z"/>
+          </svg>
+          <strong>Pays hispanophones</strong>
+          <span>Carte, capitales, habitants et dirigeants des 20 pays</span>
+          <em class="lien-choix">Commencer</em>
+        </a>
+        <a class="carte-choix choix-conj" href="#conjugaison">
+          <div class="silhouette lettres-fond" aria-hidden="true" lang="es">tuve<br>haré<br>dijeron<br>fuera</div>
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/>
+          </svg>
+          <strong>Conjugaison</strong>
+          <span>Évaluations sur le présent, le prétérit, l'imparfait, le futur, le conditionnel et l'imparfait du subjonctif</span>
+          <em class="lien-choix">Commencer</em>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== PARTIE PAYS ===== -->
+    <div id="partie-pays" hidden>
     <!-- ÉCRAN 1 : RÉGLAGES -->
     <section id="ecran-reglages" class="ecran">
       <form id="form-reglages">
@@ -101,8 +133,13 @@
     <!-- ÉCRAN 3 : RÉSULTATS -->
     <section id="ecran-resultats" class="ecran" hidden>
       <h2>Résultat</h2>
-      <p class="score-final"><span id="score-final"></span> <span id="pourcentage"></span></p>
-      <p id="message-final"></p>
+      <div class="bilan">
+        <div class="jauge" id="jauge-pays"><span><b id="pourcentage"></b><small>%</small></span></div>
+        <div>
+          <p class="score-final">Score : <span id="score-final"></span></p>
+          <p id="message-final"></p>
+        </div>
+      </div>
 
       <h3 id="titre-erreurs">Tes erreurs</h3>
       <ol id="liste-erreurs"></ol>
@@ -113,9 +150,111 @@
         <button type="button" class="bouton" id="modifier-reglages">Modifier les réglages</button>
       </div>
     </section>
+    </div>
+
+    <!-- ===== PARTIE CONJUGAISON ===== -->
+    <div id="partie-conjugaison" hidden>
+      <div class="onglets" role="tablist" aria-label="Conjugaison">
+        <button type="button" role="tab" data-onglet="eval" aria-selected="true">Évaluation</button>
+        <button type="button" role="tab" data-onglet="verbes" aria-selected="false">Verbes</button>
+        <button type="button" role="tab" data-onglet="terminaisons" aria-selected="false">Terminaisons</button>
+      </div>
+      <p class="aide verrou" id="onglets-verrou" role="status" hidden>Les onglets Verbes et Terminaisons
+        s'ouvriront une fois ta feuille corrigée.</p>
+
+      <!-- Onglet Évaluation -->
+      <div id="onglet-eval" role="tabpanel">
+      <section id="conj-ecran-reglages" class="ecran">
+        <form id="conj-form">
+          <div>
+            <fieldset>
+              <legend>Temps</legend>
+              <div id="conj-temps" class="cases"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Types de verbes</legend>
+              <div id="conj-categories" class="cases"></div>
+              <p class="aide">La diphtongue n'apparaît qu'au présent. L'affaiblissement apparaît au présent,
+                au prétérit (él, ellos) et à l'imparfait du subjonctif.</p>
+            </fieldset>
+
+            <fieldset>
+              <legend>Nombre de questions</legend>
+              <div class="segments">
+                <label><input type="radio" name="conj-nombre" value="10"><span>10</span></label>
+                <label><input type="radio" name="conj-nombre" value="20"><span>20</span></label>
+                <label><input type="radio" name="conj-nombre" value="30"><span>30</span></label>
+                <label><input type="radio" name="conj-nombre" value="40"><span>40</span></label>
+              </div>
+            </fieldset>
+          </div>
+
+          <p class="aide" id="conj-info"></p>
+          <button type="submit" class="bouton principal large" id="conj-commencer">Commencer l'évaluation</button>
+        </form>
+      </section>
+
+      <section id="conj-ecran-eval" class="ecran" hidden>
+        <div id="conj-resultat" hidden>
+          <h2>Résultat</h2>
+          <div class="bilan">
+            <div class="jauge" id="conj-jauge"><span><b id="conj-note"></b><small>/ 20</small></span></div>
+            <div>
+              <p id="conj-detail"></p>
+              <p id="conj-message"></p>
+            </div>
+          </div>
+          <div class="actions colonne">
+            <button type="button" class="bouton principal" id="conj-refaire-erreurs">Refaire uniquement les erreurs</button>
+            <button type="button" class="bouton" id="conj-refaire">Refaire la même évaluation</button>
+            <button type="button" class="bouton" id="conj-nouvelle">Nouvelle évaluation</button>
+            <button type="button" class="bouton" id="conj-reglages">Modifier les réglages</button>
+          </div>
+          <p class="aide">Tes corrections sont détaillées ci-dessous.</p>
+        </div>
+
+        <h2 id="conj-titre"></h2>
+        <p class="aide">Écris seulement la forme conjuguée, avec le pronom s'il y en a un (se volvió, lo alababa).
+          Les accents sont obligatoires. Entrée passe à la question suivante.</p>
+
+        <form id="conj-feuille"></form>
+
+        <div class="lettres lettres-collantes" id="conj-lettres" role="group" aria-label="Lettres accentuées"></div>
+
+        <p class="aide erreur" id="conj-alerte" hidden></p>
+        <div class="actions">
+          <button type="button" class="bouton principal" id="conj-corriger">Corriger</button>
+          <button type="button" class="bouton lien" id="conj-quitter">Quitter l'évaluation</button>
+        </div>
+      </section>
+      </div>
+
+      <!-- Onglet Verbes : liste et fiche de chaque verbe -->
+      <section id="onglet-verbes" class="ecran" role="tabpanel" hidden>
+        <div id="memo-zone-liste">
+          <label class="recherche">
+            <span class="visuellement-cache">Chercher un verbe</span>
+            <input type="search" id="memo-recherche" placeholder="Chercher un verbe (espagnol ou français)"
+              autocomplete="off" autocapitalize="off" spellcheck="false">
+          </label>
+          <div class="filtres" id="memo-filtres" role="group" aria-label="Filtrer par type de verbes"></div>
+          <p class="aide" id="memo-compte"></p>
+          <ul class="liste-verbes" id="memo-liste"></ul>
+        </div>
+        <div id="memo-fiche" hidden></div>
+      </section>
+
+      <!-- Onglet Terminaisons : tableaux réguliers et règles -->
+      <section id="onglet-terminaisons" class="ecran" role="tabpanel" hidden>
+        <h2>Terminaisons régulières et règles</h2>
+        <p class="aide">Les terminaisons sont en couleur. Exemples : hablar (parler), comer (manger), vivir (vivre).</p>
+        <div id="memo-terminaisons"></div>
+      </section>
+    </div>
   </main>
 
-  <footer class="pied">
+  <footer class="pied" id="pied-pays" hidden>
     Données au 27 octobre 2026. Carte : Natural Earth.
     <details id="credits">
       <summary>Crédits des photos</summary>
@@ -127,5 +266,9 @@
   <script src="js/pays.js"></script>
   <script src="js/carte.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/verbes.js"></script>
+  <script src="js/conjugaison.js"></script>
+  <script src="js/memo.js"></script>
+  <script src="js/accueil.js"></script>
 </body>
 </html>

@@ -321,6 +321,27 @@ function utiliserIndice() {
 // 3.5 s'affiche "3,5"
 const formaterScore = (s) => String(s).replace(".", ",");
 
+const mouvementReduit = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Remplit le cercle de résultat progressivement. part : de 0 à 1.
+// ecrire(avancement) affiche le nombre au centre (avancement va de 0 à 1).
+function animerJauge(jauge, part, ecrire) {
+  const couleur = part >= 0.7 ? "var(--ok)" : part >= 0.5 ? "var(--ocre)" : "var(--faux)";
+  jauge.style.setProperty("--c", couleur);
+  const duree = mouvementReduit() ? 0 : 1000;
+  const debut = performance.now();
+  const etape = (maintenant) => {
+    const k = duree ? Math.min(1, (maintenant - debut) / duree) : 1;
+    const avancement = 1 - Math.pow(1 - k, 3); // ralentit à la fin
+    jauge.style.setProperty("--p", (part * avancement * 100).toFixed(2));
+    ecrire(avancement);
+    if (k < 1) requestAnimationFrame(etape);
+  };
+  jauge.style.setProperty("--p", 0);
+  ecrire(0);
+  requestAnimationFrame(etape);
+}
+
 /* ===== Déroulement du quiz ===== */
 
 function lancerNouvellesQuestions() {
@@ -538,7 +559,6 @@ function afficherResultats() {
   const n = partie.questions.length;
   const pourcentage = Math.round((partie.score / n) * 100);
   $("#score-final").textContent = `${formaterScore(partie.score)} / ${n}`;
-  $("#pourcentage").textContent = `(${pourcentage} %)`;
 
   let message = "Continue à t'entraîner, tu vas progresser.";
   if (pourcentage === 100) message = "Parfait, aucune erreur.";
@@ -565,6 +585,9 @@ function afficherResultats() {
   liste.hidden = !aDesErreurs;
   $("#rejouer-erreurs").hidden = !aDesErreurs;
   afficherEcran("resultats");
+  animerJauge($("#jauge-pays"), partie.score / n, (a) => {
+    $("#pourcentage").textContent = Math.round(pourcentage * a);
+  });
 }
 
 /* ===== Démarrage ===== */

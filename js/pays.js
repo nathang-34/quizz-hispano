@@ -25,8 +25,10 @@
   Exemple : si l'Argentine change de président, remplace "Javier Milei",
   ["Milei"] et éventuellement "presidente" (ou "presidenta").
   Pour la photo : cherche le nouveau dirigeant sur commons.wikimedia.org,
-  remplace le fichier photos/AR.jpg (même nom), puis mets à jour autor,
-  licencia et fuente.
+  enregistre-la dans photos avec un NOUVEAU nom (par exemple AR-nom.jpg),
+  puis mets à jour archivo, autor, licencia et fuente.
+  Un nouveau nom est important : avec le même nom, les navigateurs
+  continueraient d'afficher l'ancienne photo gardée en mémoire.
   Garde bien les guillemets et les virgules.
 */
 
@@ -125,7 +127,7 @@ const PAISES = [
     apellidos: ["Díaz-Canel", "Díaz-Canel Bermúdez"],
     cargo: "presidente",
     foto: {
-      archivo: "photos/CU.jpg",
+      archivo: "photos/CU-diaz-canel.jpg",
       autor: "El divo de placetas",
       licencia: "CC BY-SA 4.0",
       fuente: "https://commons.wikimedia.org/wiki/File:Miguel_Diaz-Canel_on_July_7,_2025_(cropped).jpg",

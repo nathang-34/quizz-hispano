@@ -1,43 +1,57 @@
-/* Couleurs du site (modifiables ici) */
+/* Couleurs du site (modifiables ici) : terracotta et ocre */
 :root {
-  --fond: #f5f6f8;
+  --fond: #fbf6ee;
   --surface: #ffffff;
-  --texte: #1d232b;
-  --doux: #5b6573;
-  --bord: #d3d9e0;
-  --accent: #1f5fae;
+  --texte: #3a2a20;
+  --doux: #7a6a5e;
+  --bord: #e6dacb;
+  --terracotta: #b4532a;
+  --ocre: #d9a441;
+  --bleu: #2f6e8e;
+  --accent: var(--terracotta);
   --accent-texte: #ffffff;
-  --ok: #1b7f3b;
-  --ok-fond: #e2f3e7;
-  --faux: #c0352b;
-  --faux-fond: #fbe6e4;
-  --mer: #dce9f4;
-  --terre: #d9d5cb;
-  --pays: #f2e4bd;
-  --pays-survol: #e3c873;
-  --trait: #7f7a6d;
+  --bandeau: #b4532a;
+  --bandeau-texte: #fff7ee;
+  --ok: #2e7d4f;
+  --ok-fond: #e5f2e8;
+  --faux: #b8372b;
+  --faux-fond: #fbe7e3;
+  --mer: #dbe9ef;
+  --terre: #ddd3c3;
+  --pays: #f0dcae;
+  --pays-survol: #e2bb63;
+  --trait: #85725f;
+  --ombre: 0 6px 18px rgba(120, 60, 20, 0.14);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fond: #15191e;
-    --surface: #1f252c;
-    --texte: #e8ecf0;
-    --doux: #a2acb8;
-    --bord: #39424d;
-    --accent: #5f9be0;
-    --accent-texte: #0d1520;
-    --ok: #4cc276;
-    --ok-fond: #183626;
-    --faux: #f07b70;
-    --faux-fond: #3d1e1b;
-    --mer: #1d3347;
-    --terre: #4a4740;
-    --pays: #8a7a4c;
-    --pays-survol: #b49b55;
-    --trait: #26231e;
+    --fond: #1c1612;
+    --surface: #271f19;
+    --texte: #f1e7dc;
+    --doux: #b9a898;
+    --bord: #45372c;
+    --terracotta: #e08a5f;
+    --ocre: #e2b45a;
+    --bleu: #6fb0cf;
+    --accent-texte: #1c1612;
+    --bandeau: #7e3a1d;
+    --bandeau-texte: #fbeee2;
+    --ok: #5cc184;
+    --ok-fond: #1b3324;
+    --faux: #f08273;
+    --faux-fond: #3f201b;
+    --mer: #1f3540;
+    --terre: #4d4237;
+    --pays: #8c7444;
+    --pays-survol: #b8964f;
+    --trait: #2a211b;
+    --ombre: 0 6px 18px rgba(0, 0, 0, 0.35);
   }
 }
+
+/* La partie Pays a sa propre couleur : bleu */
+body[data-partie="pays"] { --accent: var(--bleu); }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -57,9 +71,117 @@ body {
   padding: 0 16px;
 }
 
-.entete { padding-top: 20px; }
-h1 { font-size: 1.5rem; margin: 0; }
-.sous-titre { margin: 4px 0 16px; color: var(--doux); }
+/* Bandeau du haut, avec un motif discret de carreaux (azulejos) */
+.bandeau {
+  background-color: var(--bandeau);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.13' stroke-width='1.5'%3E%3Cpath d='M22 4 40 22 22 40 4 22z'/%3E%3Ccircle cx='22' cy='22' r='6'/%3E%3Ccircle cx='0' cy='0' r='8'/%3E%3Ccircle cx='44' cy='0' r='8'/%3E%3Ccircle cx='0' cy='44' r='8'/%3E%3Ccircle cx='44' cy='44' r='8'/%3E%3C/g%3E%3C/svg%3E");
+  color: var(--bandeau-texte);
+  margin-bottom: 20px;
+  border-bottom: 4px solid var(--ocre);
+}
+.entete { padding-top: 22px; padding-bottom: 4px; }
+.entete-ligne { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+h1 { font-size: 1.55rem; margin: 0; letter-spacing: 0.01em; }
+.sous-titre { margin: 4px 0 16px; color: var(--bandeau-texte); opacity: 0.88; }
+.bouton.bouton-bandeau {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--bandeau-texte);
+}
+.bouton.bouton-bandeau:hover { background: rgba(255, 255, 255, 0.24); border-color: var(--bandeau-texte); }
+
+/* Menu d'accueil */
+#accueil h2 { margin: 0 0 14px; font-size: 1.2rem; }
+.choix-accueil { display: grid; gap: 14px; }
+@media (min-width: 560px) { .choix-accueil { grid-template-columns: 1fr 1fr; } }
+.carte-choix {
+  --couleur: var(--terracotta);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 20px 18px 18px;
+  min-height: 210px;
+  border: 1px solid var(--bord);
+  border-top: 5px solid var(--couleur);
+  border-radius: 12px;
+  color: var(--texte);
+  text-decoration: none;
+  background: var(--surface);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.carte-choix.choix-pays { --couleur: var(--bleu); }
+.carte-choix:hover, .carte-choix:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--ombre);
+  border-color: var(--couleur);
+  outline: none;
+}
+.carte-choix > *:not(.silhouette) { position: relative; }
+.carte-choix .icone {
+  width: 40px; height: 40px; padding: 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--couleur) 14%, transparent);
+  fill: none; stroke: var(--couleur); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  transition: transform 0.25s ease;
+}
+.carte-choix:hover .icone { transform: rotate(-8deg) scale(1.08); }
+.carte-choix strong { font-size: 1.2rem; color: var(--couleur); }
+.carte-choix span { color: var(--doux); font-size: 0.95rem; max-width: 24em; }
+.lien-choix {
+  font-style: normal; font-weight: 600; font-size: 0.95rem;
+  color: var(--couleur); margin-top: 6px;
+}
+.lien-choix::after { content: " \2192"; display: inline-block; transition: transform 0.2s ease; }
+.carte-choix:hover .lien-choix::after { transform: translateX(5px); }
+
+/* Décor en fond des cartes : silhouette de la carte, formes conjuguées */
+.silhouette {
+  position: absolute;
+  right: -10px; bottom: -14px;
+  width: 58%;
+  pointer-events: none;
+  color: var(--couleur);
+  opacity: 0.13;
+  transition: opacity 0.25s ease, transform 0.4s ease;
+}
+.silhouette svg { display: block; width: 100%; height: auto; }
+.silhouette path { fill: currentColor; }
+.carte-choix:hover .silhouette { opacity: 0.22; transform: scale(1.04); }
+.lettres-fond {
+  width: auto; right: 14px; bottom: 8px;
+  font-size: 1.3rem; font-weight: 700; font-style: italic;
+  line-height: 1.15; text-align: right;
+  opacity: 0.1;
+}
+.carte-choix:hover .lettres-fond { opacity: 0.16; }
+.carte-choix span { max-width: 78%; }
+
+/* Animation des boutons au survol */
+.bouton, .options button, .lettres button, .segments span, .segments button {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease, filter 0.15s ease;
+}
+@media (hover: hover) {
+  .bouton:hover:not(:disabled):not(.lien),
+  .options button:hover:not(:disabled),
+  .lettres button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--ombre);
+  }
+  .bouton.principal:hover:not(:disabled) { filter: brightness(1.08); }
+  .bouton.lien:hover { color: var(--accent); }
+  .segments label:hover span, .segments button:hover { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .segments input:checked + span, .segments button[aria-pressed="true"] { background-color: var(--accent); }
+}
+.bouton:active:not(:disabled), .options button:active:not(:disabled), .lettres button:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+}
 
 .ecran {
   background: var(--surface);
@@ -283,3 +405,239 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 #liste-erreurs .detail { color: var(--doux); font-size: 0.95rem; }
 #liste-erreurs .detail b { color: var(--texte); font-weight: 600; }
 h3 { margin: 20px 0 8px; font-size: 1.1rem; }
+
+/* Conjugaison : feuille d'évaluation */
+#conj-titre { font-size: 1.2rem; margin: 0 0 4px; }
+.partie-eval h3 { margin: 22px 0 10px; }
+.partie-eval ol { padding-left: 28px; margin: 0; display: grid; gap: 10px; }
+.partie-eval .item { display: grid; gap: 4px 12px; align-items: center; }
+@media (min-width: 560px) {
+  .partie-eval .item { grid-template-columns: 220px 1fr; }
+  .partie-eval .corr-item { grid-column: 2; }
+}
+.partie-eval input {
+  font: inherit;
+  padding: 8px 10px;
+  min-height: 44px;
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--texte);
+  width: 100%;
+}
+.partie-eval input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.partie-eval input.ok { border-color: var(--ok); background: var(--ok-fond); }
+.partie-eval input.faux { border-color: var(--faux); background: var(--faux-fond); }
+.corr-item { font-size: 0.95rem; }
+.corr-item b { color: var(--ok); }
+.corr-item .remarque { color: var(--faux); }
+.tableau-conj { margin-top: 4px; }
+.tableau-conj summary { cursor: pointer; color: var(--doux); }
+.tableau-conj table { border-collapse: collapse; margin-top: 6px; font-size: 0.95rem; }
+.tableau-conj th, .tableau-conj td { text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid var(--bord); }
+.tableau-conj th { font-weight: 400; color: var(--doux); }
+.tableau-conj tr.demandee td { font-weight: 700; }
+
+/* Lettres accentuées toujours visibles en bas de l'écran pendant l'évaluation */
+.lettres-collantes {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 16px -16px 0;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--bord);
+  justify-content: center;
+}
+#conj-resultat { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--bord); }
+#conj-resultat h2 { margin: 0 0 6px; }
+
+/* Résultat : note dans un cercle qui se remplit */
+.bilan { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin: 8px 0 4px; }
+.bilan p { margin: 4px 0; }
+.bilan .score-final { font-size: 1.15rem; font-weight: 600; }
+.jauge {
+  --p: 0;
+  --c: var(--ok);
+  flex: none;
+  width: 132px; height: 132px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--bord) 0);
+}
+.jauge::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 106px; height: 106px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.jauge > span { grid-area: 1 / 1; position: relative; text-align: center; line-height: 1; }
+.jauge b { font-size: 2rem; font-weight: 700; color: var(--texte); font-variant-numeric: tabular-nums; }
+.jauge small { display: block; margin-top: 4px; color: var(--doux); font-size: 0.9rem; }
+
+/* Animation de la correction */
+@keyframes juste {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.03); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ok) 25%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes erreur {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes apparition {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.partie-eval input.ok, .ecrit input.ok, .options button.ok { animation: juste 0.5s ease both; }
+.partie-eval input.faux, .ecrit input.faux, .options button.faux { animation: erreur 0.45s ease both; }
+.corr-item:not([hidden]), #correction:not([hidden]) { animation: apparition 0.35s ease both; }
+
+/* Moins de mouvements si le téléphone ou l'ordinateur le demande */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Onglets de la partie Conjugaison */
+.onglets {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: 12px;
+}
+.onglets button {
+  flex: 1;
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--doux);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+@media (hover: hover) {
+  .onglets button:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+}
+.onglets button[aria-selected="true"] { background: var(--accent); color: var(--accent-texte); }
+
+.visuellement-cache {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Onglet Verbes */
+.recherche input {
+  font: inherit;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  background: var(--fond);
+  color: var(--texte);
+}
+.recherche input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.filtres { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.filtres button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  min-height: 36px;
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--texte);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+@media (hover: hover) { .filtres button:hover { border-color: var(--accent); transform: translateY(-1px); } }
+.filtres button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-texte); }
+
+.liste-verbes { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 6px; }
+@media (min-width: 620px) { .liste-verbes { grid-template-columns: 1fr 1fr; } }
+.ligne-verbe {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--texte);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+@media (hover: hover) { .ligne-verbe:hover { transform: translateY(-2px); box-shadow: var(--ombre); } }
+.ligne-verbe b { font-size: 1.05rem; }
+.traduction { color: var(--doux); font-weight: 400; font-size: 0.95rem; }
+.etiquettes { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 0; }
+.etiquette {
+  font-size: 0.75rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ocre) 22%, transparent);
+  color: var(--texte);
+}
+
+/* Fiche d'un verbe */
+.retour { padding-left: 0; }
+.titre-fiche { margin: 4px 0 2px; font-size: 1.6rem; color: var(--accent); }
+.titre-fiche .traduction { font-size: 1rem; }
+.remarques { margin: 10px 0; padding-left: 20px; }
+.remarques li { margin-bottom: 4px; }
+.grille-temps { display: grid; gap: 10px; margin-top: 10px; }
+.grille-temps { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 560px) { .grille-temps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.carte-temps, .carte-terminaisons {
+  border: 1px solid var(--bord);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+.carte-temps h3, .carte-terminaisons h3 { margin: 0 0 6px; color: var(--accent); font-size: 1.05rem; }
+.carte-temps table, .carte-terminaisons table { border-collapse: collapse; width: 100%; }
+.carte-temps th, .carte-temps td, .carte-terminaisons th, .carte-terminaisons td {
+  text-align: left;
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--bord);
+  vertical-align: top;
+}
+.carte-temps th, .carte-terminaisons th { font-weight: 400; color: var(--doux); white-space: nowrap; }
+.carte-temps .irr { color: var(--terracotta); font-weight: 700; }
+
+/* Onglet Terminaisons */
+#onglet-terminaisons h2 { margin: 0 0 4px; font-size: 1.2rem; }
+#memo-terminaisons { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.carte-terminaisons table { font-size: 0.95rem; }
+.cadre-table { overflow-x: auto; }
+.carte-terminaisons thead th, .carte-terminaisons tr:first-child th { color: var(--accent); font-weight: 700; }
+.carte-terminaisons td b { color: var(--terracotta); }
+.carte-terminaisons .remarques { font-size: 0.95rem; }
+.lien-fiche { padding-left: 0; display: block; margin-top: 2px; }
+
+/* Onglets bloqués pendant une évaluation non corrigée */
+.onglets button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.onglets button[aria-disabled="true"]:hover { background: none; color: var(--doux); }
+.verrou {
+  margin: -6px 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ocre) 18%, transparent);
+  color: var(--texte);
+  animation: apparition 0.3s ease both;
+}
