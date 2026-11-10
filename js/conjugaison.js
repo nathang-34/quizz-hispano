@@ -18,7 +18,7 @@ const TEMPS = [
 const CATEGORIES = [
   { id: "irregulier", label: "Irréguliers" },
   { id: "diphtongue", label: "À diphtongue (e > ie, o > ue)" },
-  { id: "affaiblissement", label: "À affaiblissement (e > i)" },
+  { id: "affaiblissement", label: "À affaiblissement (e > i, o > u)" },
   { id: "orthographe", label: "Changements d'orthographe (busqué, cojo, leyó)" },
   { id: "regulier", label: "Réguliers" },
 ];
@@ -108,7 +108,9 @@ function diphtonguer(radical, dip) {
 }
 
 // Colle radical et terminaison en gardant le son : busqué, llegué, empecé, cojo, sigo, conozco, venzo
-function joindre(radical, fin, classe, zc) {
+// brut : colle sans rien changer (sert seulement à repérer les changements d'orthographe)
+function joindre(radical, fin, classe, zc, brut) {
+  if (brut) return radical + fin;
   let r = radical;
   const devantE = "eé".includes(fin[0]);
   const devantOA = "oaóá".includes(fin[0]);
@@ -131,6 +133,9 @@ function joindre(radical, fin, classe, zc) {
   Renvoie les 6 personnes du temps demandé.
   Chaque personne est une liste de formes acceptées (la première est celle affichée) :
   [["tuviera", "tuviese"], ["tuvieras", "tuvieses"], ...]
+  Deux réglages servent seulement à trouver la catégorie du verbe à chaque temps :
+  d.simple enlève les irrégularités automatiques (conozco, construyo, conduje),
+  d.brut enlève en plus les changements d'orthographe (busqué, cojo, leyó).
 */
 function conjuguer(base, temps, d = particularites(base, base)) {
   if (d.modelo) {
@@ -141,7 +146,8 @@ function conjuguer(base, temps, d = particularites(base, base)) {
   const classe = inf.slice(-2);
   const groupe = classe === "ar" ? "ar" : "er";
   const radical = inf.slice(0, -2);
-  const zc = prendZc(inf);
+  const brut = Boolean(d.brut);
+  const zc = !d.simple && prendZc(inf);
   const uir = /[^gq]uir$/.test(inf); // construir : construyo
 
   if (temps === "presente") {
@@ -151,19 +157,19 @@ function conjuguer(base, temps, d = particularites(base, base)) {
       let r = radical;
       if (PERSONNES_FORTES.includes(p)) {
         r = diphtonguer(r, d.dip);
-        if (d.tilde) {
+        if (d.tilde && !brut) {
           const i = Math.max(r.lastIndexOf("i"), r.lastIndexOf("u"));
           r = r.slice(0, i) + ACCENTUEE[r[i]] + r.slice(i + 1);
         }
-        if (uir) r += "y";
+        if (uir && !d.simple) r += "y";
       }
-      return [joindre(r, fin, classe, zc)];
+      return [joindre(r, fin, classe, zc, brut)];
     });
   }
 
   if (temps === "preterito") {
     if (Array.isArray(d.pret)) return d.pret.map(enListe);
-    if (d.pret || /ducir$/.test(inf)) {
+    if (d.pret || (!d.simple && /ducir$/.test(inf))) {
       // Prétérit fort : tuve, tuvo, dijeron, condujeron
       const r = d.pret || radical.slice(0, -1) + "j";
       return TERMINAISONS.fort.map((fin, p) => {
@@ -179,12 +185,12 @@ function conjuguer(base, temps, d = particularites(base, base)) {
       if (classe === "ir" && d.dip && troisieme) {
         r = d.dip === "ue" ? changerVoyelle(r, "o", "u") : changerVoyelle(r, "e", "i");
       }
-      if (groupe === "er") {
+      if (groupe === "er" && !brut) {
         if (troisieme && (/[aeo]$/.test(r) || (uir && r.endsWith("u")))) f = "y" + f.slice(1); // leyó, construyeron
         else if (troisieme && /(ñ|ll)$/.test(r)) f = f.slice(1); // riñó, riñeron
         if (/[aeo]$/.test(r) && f.startsWith("i")) f = "í" + f.slice(1); // leíste, oímos
       }
-      return [joindre(r, f, classe, zc)];
+      return [joindre(r, f, classe, zc, brut)];
     });
   }
 
@@ -226,23 +232,51 @@ function solution(q) {
   };
 }
 
-// Catégories d'un verbe de la banque, déduites de ses particularités
-function categoriesVerbe(v) {
+/*
+  Catégories d'un verbe à un temps donné. Le verbe est conjugué quatre fois :
+  avec ses vraies formes, sans ses irrégularités, sans les changements d'orthographe,
+  puis sans changement de voyelle. Chaque différence donne une catégorie.
+  Exemple : tener est irrégulier au futur (tendré) mais régulier à l'imparfait (tenía).
+*/
+const CACHE_CATEGORIES = new Map();
+function categoriesTemps(v, temps) {
+  const cle = v.inf + "|" + temps;
+  if (CACHE_CATEGORIES.has(cle)) return CACHE_CATEGORIES.get(cle);
   const { base } = analyserVerbe(v.inf);
   const d = particularites(base, v.inf);
-  const inf = base.replace("í", "i");
-  const cats = new Set();
+  let cats;
   if (d.modelo) {
-    categoriesVerbe(BANQUE.get(d.modelo)).forEach((c) => cats.add(c));
-    cats.add("irregulier");
+    cats = categoriesTemps(BANQUE.get(d.modelo), temps); // obtener comme tener
+  } else {
+    // Avec un prétérit fort (vine, dije), le changement de voyelle n'est pas un affaiblissement :
+    // viniera et dijera sont irréguliers
+    const dip = d.pret && (temps === "preterito" || temps === "subjuntivo") ? undefined : d.dip;
+    const complet = conjuguer(base, temps, d);
+    const simple = conjuguer(base, temps, { dip, tilde: d.tilde, simple: true });
+    const brut = conjuguer(base, temps, { dip, simple: true, brut: true });
+    const sansVoyelle = conjuguer(base, temps, { simple: true, brut: true });
+    const pareil = (a, b) => a.join("/") === b.join("/");
+    cats = new Set();
+    // Personne par personne : une forme irrégulière (digo) ne compte pas aussi pour l'orthographe
+    for (let p = 0; p < 6; p++) {
+      if (!pareil(complet[p], simple[p])) { cats.add("irregulier"); continue; }
+      if (!pareil(simple[p], brut[p])) cats.add("orthographe");
+      if (!pareil(brut[p], sansVoyelle[p])) {
+        // e > ie, o > ue au présent ; e > i et o > u partout (pido, sintió, durmieron)
+        cats.add(temps === "presente" && d.dip !== "i" ? "diphtongue" : "affaiblissement");
+      }
+    }
+    if (cats.size === 0) cats.add("regulier");
   }
-  if (d.pres || d.yo || d.pret || d.imp || d.fut || /ducir$/.test(inf) || prendZc(inf) || /[^gq]uir$/.test(inf)) {
-    cats.add("irregulier");
-  }
-  if (d.dip === "ie" || d.dip === "ue") cats.add("diphtongue");
-  if (d.dip === "i") cats.add("affaiblissement");
-  if (d.tilde || /(car|gar|zar|ger|gir|guir|[aeo]er|[^aeiou]cer)$/.test(inf)) cats.add("orthographe");
-  if (cats.size === 0) cats.add("regulier");
+  CACHE_CATEGORIES.set(cle, cats);
+  return cats;
+}
+
+// Résumé sur tous les temps (onglet Verbes) : "Réguliers" seulement si le verbe l'est partout
+function categoriesVerbe(v) {
+  const cats = new Set();
+  for (const t of TEMPS) categoriesTemps(v, t.id).forEach((c) => cats.add(c));
+  if (cats.size > 1) cats.delete("regulier");
   return cats;
 }
 
@@ -291,8 +325,14 @@ const Conjugaison = (() => {
 
   /* ----- Réglages ----- */
 
-  function verbesChoisis() {
-    return VERBOS.filter((v) => [...categoriesVerbe(v)].some((c) => reglages.categories.includes(c)));
+  // Verbes qui sont, à ce temps, d'un des types cochés
+  function verbesPour(temps) {
+    return VERBOS.filter((v) => [...categoriesTemps(v, temps)].some((c) => reglages.categories.includes(c)));
+  }
+
+  // Temps cochés qui ont au moins un verbe des types cochés
+  function tempsUtiles() {
+    return TEMPS.map((t) => t.id).filter((t) => reglages.temps.includes(t) && verbesPour(t).length > 0);
   }
 
   function lire() {
@@ -317,7 +357,18 @@ const Conjugaison = (() => {
       message = "Choisis au moins un type de verbes.";
       possible = false;
     } else {
-      message = `${verbesChoisis().length} verbes disponibles avec ces réglages.`;
+      const utiles = tempsUtiles();
+      const vides = TEMPS.filter((t) => reglages.temps.includes(t.id) && !utiles.includes(t.id));
+      const noms = vides.map((t) => t.label.charAt(0).toLowerCase() + t.label.slice(1)).join(", ");
+      if (utiles.length === 0) {
+        message = "Aucun verbe de ces types aux temps choisis. Coche un autre temps ou un autre type de verbes.";
+        possible = false;
+      } else {
+        const nb = new Set(utiles.flatMap((t) => verbesPour(t).map((v) => v.inf))).size;
+        message = `${nb} verbes disponibles avec ces réglages.`;
+        if (vides.length === 1) message += ` Aucun verbe de ces types au temps suivant, qui sera ignoré : ${noms}.`;
+        if (vides.length > 1) message += ` Aucun verbe de ces types aux temps suivants, qui seront ignorés : ${noms}.`;
+      }
     }
     info.textContent = message;
     info.classList.toggle("erreur", !possible);
@@ -342,8 +393,8 @@ const Conjugaison = (() => {
   /* ----- Choix des questions ----- */
 
   function tirerQuestions() {
-    const verbes = verbesChoisis();
-    const temps = TEMPS.filter((t) => reglages.temps.includes(t.id)).map((t) => t.id);
+    const temps = tempsUtiles();
+    const verbesParTemps = new Map(temps.map((t) => [t, verbesPour(t)]));
     const n = Number(reglages.nombre);
     // Répartit les questions entre les temps, le reste au hasard
     const parTemps = temps.map(() => Math.floor(n / temps.length));
@@ -357,8 +408,6 @@ const Conjugaison = (() => {
     const nbPronoms = min + Math.floor(Math.random() * (max - min + 1));
     const avecPronom = new Set(melanger(cases.map((_, i) => i)).slice(0, nbPronoms));
 
-    const simples = verbes.filter((v) => !analyserVerbe(v.inf).reflechi);
-    const pronominaux = verbes.filter((v) => variantesPronom(v).length > 0);
     const dejaPris = new Set();
     // Choisit un verbe pas encore utilisé dans cette évaluation (si possible)
     const piocher = (liste) => {
@@ -371,12 +420,13 @@ const Conjugaison = (() => {
     };
 
     return cases.map((t, i) => {
+      const verbes = verbesParTemps.get(t);
       let verbe = null;
       if (avecPronom.has(i)) {
-        const v = piocher(pronominaux);
+        const v = piocher(verbes.filter((x) => variantesPronom(x).length > 0));
         if (v) verbe = hasard(variantesPronom(v));
       }
-      if (!verbe) verbe = (piocher(simples) || piocher(verbes)).inf;
+      if (!verbe) verbe = (piocher(verbes.filter((x) => !analyserVerbe(x.inf).reflechi)) || piocher(verbes)).inf;
       const p = Math.floor(Math.random() * 6);
       return { temps: t, verbe, pronom: hasard(PERSONNES[p]), p };
     });

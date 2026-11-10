@@ -189,7 +189,7 @@ const Memo = (() => {
       fiche.append(ul);
     }
     fiche.append(el("p", { class: "aide" },
-      "En couleur : les formes qui s'écartent de la conjugaison régulière. él vaut aussi pour ella et usted, ellos pour ellas et ustedes."));
+      "Les étiquettes en haut résument tous les temps ; celles de chaque tableau donnent le type du verbe à ce temps. En couleur : les formes qui s'écartent de la conjugaison régulière. él vaut aussi pour ella et usted, ellos pour ellas et ustedes."));
 
     const grille = el("div", { class: "grille-temps" });
     for (const t of TEMPS) {
@@ -197,6 +197,10 @@ const Memo = (() => {
       const regulieres = formesRegulieres(base, t.id);
       const carte = el("div", { class: "carte-temps" });
       carte.append(el("h3", {}, t.label));
+      // Type du verbe à ce temps : tener est irrégulier au futur, régulier à l'imparfait
+      const types = el("p", { class: "etiquettes" });
+      for (const c of categoriesTemps(v, t.id)) types.append(el("span", { class: "etiquette" }, NOMS_CATEGORIES[c]));
+      carte.append(types);
       const table = el("table", { lang: "es" });
       formes.forEach((alts, p) => {
         const tr = el("tr");
