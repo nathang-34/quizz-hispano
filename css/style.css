@@ -667,3 +667,9 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
 .carte-svg .point.vrai { fill: var(--texte); }
 .carte-svg .ecart { stroke: var(--texte); stroke-width: 1.5; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; fill: none; }
 .legende-carte { font-size: 0.85rem; color: var(--doux); margin: 0 0 10px; }
+/* Questions « écrire le nom » : le lieu à nommer */
+.carte-svg .zona.cible { fill: var(--ocre); }
+.carte-svg .point.cible { fill: var(--terracotta); animation: pulsation 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pulsation { 50% { transform: scale(1.5); } }
+@media (prefers-reduced-motion: reduce) { .carte-svg .point.cible { animation: none; } }
+#esp-reponses .ecrit { margin-top: 12px; }

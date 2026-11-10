@@ -10,7 +10,10 @@ const Communautes = (() => {
   const TYPES_ESP = [
     { id: "comunidad", label: "Situer la communauté autonome (et Ceuta, Melilla)" },
     { id: "ciudad", label: "Situer l'une des 20 plus grandes villes" },
+    { id: "nom_comunidad", label: "Écrire le nom de la communauté en couleur" },
+    { id: "nom_ciudad", label: "Écrire le nom de la ville marquée" },
   ];
+  const AVEC_COMUNIDAD = ["comunidad", "nom_comunidad"];
   const CLE = "quizHispano.espagne";
   const TOLERANCE_KM = 50; // une ville est juste si le clic est à moins de 50 km
   const NS = "http://www.w3.org/2000/svg";
@@ -59,8 +62,10 @@ const Communautes = (() => {
 
   function toutesLesQuestions() {
     const qs = [];
-    if (reglages.types.includes("comunidad")) COMUNIDADES.forEach((c) => qs.push({ type: "comunidad", item: c }));
-    if (reglages.types.includes("ciudad")) CIUDADES.forEach((c) => qs.push({ type: "ciudad", item: c }));
+    for (const type of reglages.types) {
+      const liste = AVEC_COMUNIDAD.includes(type) ? COMUNIDADES : CIUDADES;
+      liste.forEach((item) => qs.push({ type, item }));
+    }
     return qs;
   }
 
@@ -168,9 +173,10 @@ const Communautes = (() => {
 
   function preparerCarte(mode, fonction) {
     couche.innerHTML = "";
-    svg.querySelectorAll(".zona").forEach((z) => z.classList.remove("ok", "faux"));
+    svg.querySelectorAll(".zona").forEach((z) => z.classList.remove("ok", "faux", "cible"));
     const carte = $("#esp-carte");
-    carte.classList.add("actif");
+    // Questions « écrire le nom » : la carte sert seulement à montrer le lieu
+    carte.classList.toggle("actif", mode === "comunidad" || mode === "ciudad");
     carte.classList.toggle("mode-zona", mode === "comunidad");
     carte.classList.toggle("mode-ville", mode === "ciudad");
     ajusterRonds();
@@ -188,6 +194,12 @@ const Communautes = (() => {
   /* ----- Questions ----- */
 
   function enonce(q) {
+    if (q.type === "nom_ciudad") return "¿Cómo se llama esta ciudad?";
+    if (q.type === "nom_comunidad") {
+      return q.item.codigo === "18" || q.item.codigo === "19"
+        ? "¿Cómo se llama esta ciudad autónoma?"
+        : "¿Cómo se llama esta comunidad autónoma?";
+    }
     if (q.type === "ciudad") return `¿Dónde está la ciudad de ${q.item.nombre}?`;
     if (q.item.codigo === "18" || q.item.codigo === "19") return `¿Dónde está la ciudad autónoma de ${q.item.nombre}?`;
     const art = q.item.articulo;
@@ -197,7 +209,62 @@ const Communautes = (() => {
 
   function texteIndice(q) {
     if (q.type === "ciudad") return `Communauté autonome : ${nomComunidad(q.item.comunidad)}`;
-    return q.item.situacion;
+    if (q.type === "comunidad") return q.item.situacion;
+    return null; // questions « écrire le nom » : l'indice montre les lettres
+  }
+
+  // Seul le nom espagnol est accepté, avec ou sans article (la Región de Murcia)
+  function nomsAcceptes(item) {
+    return item.articulo ? [item.nombre, `${item.articulo} ${item.nombre}`] : [item.nombre];
+  }
+
+  // Champ de réponse avec les lettres accentuées, comme dans le quiz des pays
+  function afficherChamp(q) {
+    const zone = $("#esp-reponses");
+    const form = el("form", { class: "ecrit" });
+    const { label, input } = creerChamp("Nom en espagnol");
+    form.append(label);
+    const lettres = el("div", { class: "lettres", role: "group", "aria-label": "Lettres accentuées" });
+    for (const lettre of ["á", "é", "í", "ó", "ú", "ü", "ñ"]) {
+      const bouton = el("button", { type: "button", lang: "es" }, lettre);
+      bouton.addEventListener("pointerdown", (e) => e.preventDefault());
+      bouton.addEventListener("click", () => {
+        if (input.disabled) return;
+        const debut = input.selectionStart ?? input.value.length;
+        const fin = input.selectionEnd ?? input.value.length;
+        input.setRangeText(lettre, debut, fin, "end");
+        input.focus();
+      });
+      lettres.append(bouton);
+    }
+    form.append(lettres);
+    const actions = el("div", { class: "actions" });
+    const valider = el("button", { type: "submit", class: "bouton principal" }, "Valider");
+    const passer = el("button", { type: "button", class: "bouton" }, "Je ne sais pas");
+    actions.append(valider, passer);
+    form.append(actions);
+    zone.append(form);
+
+    const corriger = (abandon) => {
+      if (partie.repondu) return;
+      const saisie = abandon ? "" : input.value.trim();
+      const juste = !abandon && verifier(saisie, nomsAcceptes(q.item));
+      input.disabled = true;
+      input.classList.add(juste ? "ok" : "faux");
+      [valider, passer, ...lettres.querySelectorAll("button")].forEach((b) => { b.disabled = true; });
+      svg.querySelectorAll(".cible").forEach((c) => {
+        c.classList.remove("cible");
+        c.classList.add(juste ? "ok" : "faux");
+      });
+      terminer(juste, { saisie });
+    };
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!input.value.trim()) { input.focus(); return; }
+      corriger(false);
+    });
+    passer.addEventListener("click", () => corriger(true));
+    input.focus({ preventScroll: true });
   }
 
   function lancerNouvelles() {
@@ -225,9 +292,26 @@ const Communautes = (() => {
     $("#esp-score").textContent = `Score : ${formaterScore(partie.score)}`;
     $("#esp-barre").style.width = `${(partie.index / n) * 100}%`;
     $("#esp-enonce").textContent = enonce(q);
-    $("#esp-consigne").textContent = q.type === "ciudad"
-      ? `Clique à l'endroit où se trouve la ville : juste à moins de ${TOLERANCE_KM} km. Les Canaries sont dans l'encadré.`
-      : "Clique sur la communauté. Les Canaries sont dans l'encadré, Ceuta et Melilla sont représentées par un rond.";
+    $("#esp-reponses").innerHTML = "";
+    const consignes = {
+      ciudad: `Clique à l'endroit où se trouve la ville : juste à moins de ${TOLERANCE_KM} km. Les Canaries sont dans l'encadré.`,
+      comunidad: "Clique sur la communauté. Les Canaries sont dans l'encadré, Ceuta et Melilla sont représentées par un rond.",
+      nom_comunidad: "Écris le nom en espagnol de la zone en couleur. Les accents sont obligatoires.",
+      nom_ciudad: "Écris le nom en espagnol de la ville marquée d'un point. Les accents sont obligatoires.",
+    };
+    $("#esp-consigne").textContent = consignes[q.type];
+
+    if (q.type === "nom_comunidad" || q.type === "nom_ciudad") {
+      preparerCarte(q.type, null);
+      if (q.type === "nom_comunidad") {
+        colorier(q.item.codigo, "cible");
+      } else {
+        const p = projeter(q.item.lat, q.item.lon);
+        point(p.x, p.y, "cible");
+      }
+      afficherChamp(q);
+      return;
+    }
 
     preparerCarte(q.type, (clic) => {
       if (partie.repondu) return;
@@ -254,7 +338,20 @@ const Communautes = (() => {
     $("#esp-indice").disabled = true;
     const zone = $("#esp-texte-indice");
     zone.innerHTML = "";
-    zone.append(el("strong", {}, "Indice : "), texteIndice(partie.questions[partie.index]));
+    zone.append(el("strong", {}, "Indice : "));
+    const q = partie.questions[partie.index];
+    const texte = texteIndice(q);
+    if (texte) {
+      zone.append(texte);
+    } else {
+      // Première et dernière lettre de chaque mot : "Z _ _ _ _ _ _ a"
+      const motif = el("span", { class: "motif", lang: "es" });
+      q.item.nombre.split(" ").forEach((mot, i) => {
+        if (i > 0) motif.append("  ");
+        motif.append(el("span", { class: "mot" }, masquer(mot)));
+      });
+      zone.append(motif);
+    }
     zone.hidden = false;
   }
 
@@ -279,7 +376,11 @@ const Communautes = (() => {
     correction.className = `correction ${juste ? "ok" : "faux"}`;
     correction.innerHTML = "";
     correction.append(el("strong", {}, titre));
-    if (q.type === "comunidad") {
+    if (q.type === "nom_comunidad" || q.type === "nom_ciudad") {
+      correction.append("Réponse : ", el("span", { lang: "es" }, q.item.nombre));
+      if (q.type === "nom_ciudad") correction.append(" (", el("span", { lang: "es" }, nomComunidad(q.item.comunidad)), ")");
+      if (!juste && detail.saisie) correction.append(el("br"), "Tu as écrit : ", el("span", { lang: "es" }, detail.saisie));
+    } else if (q.type === "comunidad") {
       correction.append("Réponse : ", el("span", { lang: "es" }, q.item.oficial));
       if (!juste) correction.append(el("br"), "Tu as sélectionné : ", el("span", { lang: "es" }, detail.choisi));
     } else {
@@ -328,7 +429,10 @@ const Communautes = (() => {
       const li = el("li");
       li.append(el("div", { class: "question", lang: "es" }, enonce(q)));
       const d = el("div", { class: "detail" });
-      if (q.type === "comunidad") {
+      if (q.type === "nom_comunidad" || q.type === "nom_ciudad") {
+        d.append("Ta réponse : ", el("b", { lang: "es" }, detail.saisie || "aucune"));
+        d.append(el("br"), "Bonne réponse : ", el("b", { lang: "es" }, q.item.nombre));
+      } else if (q.type === "comunidad") {
         d.append("Ta réponse : ", el("b", { lang: "es" }, detail.choisi));
         d.append(el("br"), "Bonne réponse : ", el("b", { lang: "es" }, q.item.oficial));
       } else {
