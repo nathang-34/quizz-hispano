@@ -32,6 +32,15 @@
           <span>Carte, capitales, habitants et dirigeants des 20 pays</span>
           <em class="lien-choix">Commencer</em>
         </a>
+        <a class="carte-choix choix-espagne" href="#espagne">
+          <div class="silhouette" id="silhouette-espagne" aria-hidden="true"></div>
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s-6-5.6-6-10.5a6 6 0 0 1 12 0C18 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/>
+          </svg>
+          <strong>Communautés autonomes</strong>
+          <span>Les communautés d'Espagne, Ceuta, Melilla et les 20 plus grandes villes sur la carte</span>
+          <em class="lien-choix">Commencer</em>
+        </a>
         <a class="carte-choix choix-conj" href="#conjugaison">
           <div class="silhouette lettres-fond" aria-hidden="true" lang="es">tuve<br>haré<br>dijeron<br>fuera</div>
           <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
@@ -152,6 +161,77 @@
     </section>
     </div>
 
+    <!-- ===== PARTIE COMMUNAUTÉS AUTONOMES ===== -->
+    <div id="partie-espagne" hidden>
+      <section id="esp-ecran-reglages" class="ecran">
+        <form id="esp-form">
+          <fieldset>
+            <legend>Types de questions</legend>
+            <div id="esp-types" class="cases"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Nombre de questions</legend>
+            <div class="segments">
+              <label><input type="radio" name="esp-nombre" value="10"><span>10</span></label>
+              <label><input type="radio" name="esp-nombre" value="20"><span>20</span></label>
+              <label><input type="radio" name="esp-nombre" value="30"><span>30</span></label>
+              <label><input type="radio" name="esp-nombre" value="tout"><span>Tout</span></label>
+            </div>
+            <p class="aide" id="esp-info"></p>
+          </fieldset>
+
+          <button type="submit" class="bouton principal large">Commencer</button>
+        </form>
+      </section>
+
+      <section id="esp-ecran-quiz" class="ecran" hidden>
+        <div class="barre-haut">
+          <span id="esp-progression"></span>
+          <span id="esp-score"></span>
+        </div>
+        <div class="barre" aria-hidden="true"><div id="esp-barre"></div></div>
+
+        <h2 id="esp-enonce" lang="es"></h2>
+        <p id="esp-consigne" class="aide"></p>
+
+        <div id="esp-carte" class="cadre-carte carte-espagne"></div>
+
+        <div class="zone-indice">
+          <button type="button" class="bouton" id="esp-indice">Indice</button>
+          <span class="aide">Une bonne réponse avec indice vaut 0,5 point.</span>
+          <p id="esp-texte-indice" hidden></p>
+        </div>
+
+        <div id="esp-correction" class="correction" role="status" hidden></div>
+
+        <div class="actions">
+          <button type="button" class="bouton principal" id="esp-suivant" hidden>Question suivante</button>
+          <button type="button" class="bouton lien" id="esp-quitter">Quitter le quiz</button>
+        </div>
+      </section>
+
+      <section id="esp-ecran-resultats" class="ecran" hidden>
+        <h2>Résultat</h2>
+        <div class="bilan">
+          <div class="jauge" id="esp-jauge"><span><b id="esp-pourcentage"></b><small>%</small></span></div>
+          <div>
+            <p class="score-final">Score : <span id="esp-score-final"></span></p>
+            <p id="esp-message"></p>
+          </div>
+        </div>
+
+        <h3 id="esp-titre-erreurs">Tes erreurs</h3>
+        <ol id="esp-erreurs" class="liste-erreurs"></ol>
+
+        <div class="actions colonne">
+          <button type="button" class="bouton principal" id="esp-rejouer-erreurs">Rejouer uniquement les erreurs</button>
+          <button type="button" class="bouton" id="esp-nouvelles">Nouvelles questions</button>
+          <button type="button" class="bouton" id="esp-modifier">Modifier les réglages</button>
+        </div>
+      </section>
+    </div>
+
     <!-- ===== PARTIE CONJUGAISON ===== -->
     <div id="partie-conjugaison" hidden>
       <div class="onglets" role="tablist" aria-label="Conjugaison">
@@ -263,9 +343,17 @@
     </details>
   </footer>
 
+  <footer class="pied" id="pied-espagne" hidden>
+    Carte : es-atlas, d'après l'Instituto Geográfico Nacional (licence CC BY 4.0).
+    Population des villes : INE, au 1er janvier 2025.
+  </footer>
+
   <script src="js/pays.js"></script>
   <script src="js/carte.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/espagne.js"></script>
+  <script src="js/carte-espagne.js"></script>
+  <script src="js/communautes.js"></script>
   <script src="js/verbes.js"></script>
   <script src="js/conjugaison.js"></script>
   <script src="js/memo.js"></script>

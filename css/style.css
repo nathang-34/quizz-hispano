@@ -8,6 +8,7 @@
   --terracotta: #b4532a;
   --ocre: #d9a441;
   --bleu: #2f6e8e;
+  --olivo: #5b7a2e;
   --accent: var(--terracotta);
   --accent-texte: #ffffff;
   --bandeau: #b4532a;
@@ -34,6 +35,7 @@
     --terracotta: #e08a5f;
     --ocre: #e2b45a;
     --bleu: #6fb0cf;
+    --olivo: #a3c46f;
     --accent-texte: #1c1612;
     --bandeau: #7e3a1d;
     --bandeau-texte: #fbeee2;
@@ -52,6 +54,7 @@
 
 /* La partie Pays a sa propre couleur : bleu */
 body[data-partie="pays"] { --accent: var(--bleu); }
+body[data-partie="espagne"] { --accent: var(--olivo); }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -96,7 +99,7 @@ h1 { font-size: 1.55rem; margin: 0; letter-spacing: 0.01em; }
 /* Menu d'accueil */
 #accueil h2 { margin: 0 0 14px; font-size: 1.2rem; }
 .choix-accueil { display: grid; gap: 14px; }
-@media (min-width: 560px) { .choix-accueil { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 700px) { .choix-accueil { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .carte-choix {
   --couleur: var(--terracotta);
   position: relative;
@@ -115,6 +118,7 @@ h1 { font-size: 1.55rem; margin: 0; letter-spacing: 0.01em; }
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .carte-choix.choix-pays { --couleur: var(--bleu); }
+.carte-choix.choix-espagne { --couleur: var(--olivo); }
 .carte-choix:hover, .carte-choix:focus-visible {
   transform: translateY(-4px);
   box-shadow: var(--ombre);
@@ -267,10 +271,10 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 /* Quiz */
 .barre-haut { display: flex; justify-content: space-between; color: var(--doux); font-size: 0.95rem; }
 .barre { height: 6px; background: var(--bord); border-radius: 3px; margin: 6px 0 16px; overflow: hidden; }
-#barre-remplie { height: 100%; width: 0; background: var(--accent); transition: width 0.3s; }
+#barre-remplie, #esp-barre { height: 100%; width: 0; background: var(--accent); transition: width 0.3s; }
 
-#enonce { font-size: 1.3rem; margin: 0 0 4px; }
-#consigne { margin-bottom: 14px; }
+#enonce, #esp-enonce { font-size: 1.3rem; margin: 0 0 4px; }
+#consigne, #esp-consigne { margin-bottom: 14px; }
 
 .options { display: grid; gap: 8px; }
 @media (min-width: 560px) { .options { grid-template-columns: 1fr 1fr; } }
@@ -292,9 +296,9 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 .options button.elimine { opacity: 0.35; text-decoration: line-through; }
 
 /* Indice */
-#zone-indice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 12px; }
-#zone-indice .aide { margin: 0; }
-#texte-indice {
+#zone-indice, .zone-indice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 12px; }
+#zone-indice .aide, .zone-indice .aide { margin: 0; }
+#texte-indice, #esp-texte-indice {
   flex-basis: 100%;
   margin: 4px 0 0;
   padding: 10px 12px;
@@ -302,8 +306,8 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
   background: var(--fond);
   border: 1px dashed var(--bord);
 }
-#texte-indice .motif { font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 1.05rem; white-space: pre-wrap; }
-#texte-indice .mot { white-space: pre; display: inline-block; }
+#texte-indice .motif, #esp-texte-indice .motif { font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 1.05rem; white-space: pre-wrap; }
+#texte-indice .mot, #esp-texte-indice .mot { white-space: pre; display: inline-block; }
 
 .ecrit { display: grid; gap: 10px; }
 .ecrit label { display: grid; gap: 4px; font-size: 0.92rem; color: var(--doux); }
@@ -339,17 +343,17 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 .lettres button:hover:not(:disabled) { border-color: var(--accent); }
 .lettres button:disabled { opacity: 0.5; cursor: default; }
 
-#correction {
+#correction, #esp-correction {
   margin-top: 14px;
   padding: 12px 14px;
   border-radius: 8px;
   border-left: 5px solid;
 }
-#correction.ok { background: var(--ok-fond); border-color: var(--ok); }
-#correction.faux { background: var(--faux-fond); border-color: var(--faux); }
-#correction strong { display: block; }
-#correction.ok strong { color: var(--ok); }
-#correction.faux strong { color: var(--faux); }
+#correction.ok, #esp-correction.ok { background: var(--ok-fond); border-color: var(--ok); }
+#correction.faux, #esp-correction.faux { background: var(--faux-fond); border-color: var(--faux); }
+#correction strong, #esp-correction strong { display: block; }
+#correction.ok strong, #esp-correction.ok strong { color: var(--ok); }
+#correction.faux strong, #esp-correction.faux strong { color: var(--faux); }
 
 /* Photos des dirigeants */
 .photo {
@@ -363,7 +367,7 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
   background: var(--fond);
 }
 #photo-question { margin: 0 0 14px; }
-#correction .photo { width: 110px; margin-top: 10px; }
+#correction .photo, #esp-correction .photo { width: 110px; margin-top: 10px; }
 
 #credits { margin-top: 10px; }
 #credits summary { cursor: pointer; }
@@ -399,11 +403,11 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 /* Résultats */
 .score-final { font-size: 1.8rem; font-weight: 700; margin: 0; }
 .score-final #pourcentage { color: var(--doux); font-weight: 600; font-size: 1.3rem; margin-left: 6px; }
-#liste-erreurs { padding-left: 22px; margin: 0; }
-#liste-erreurs li { margin-bottom: 12px; }
-#liste-erreurs .question { font-weight: 600; }
-#liste-erreurs .detail { color: var(--doux); font-size: 0.95rem; }
-#liste-erreurs .detail b { color: var(--texte); font-weight: 600; }
+#liste-erreurs, #esp-erreurs { padding-left: 22px; margin: 0; }
+#liste-erreurs li, #esp-erreurs li { margin-bottom: 12px; }
+#liste-erreurs .question, #esp-erreurs .question { font-weight: 600; }
+#liste-erreurs .detail, #esp-erreurs .detail { color: var(--doux); font-size: 0.95rem; }
+#liste-erreurs .detail b, #esp-erreurs .detail b { color: var(--texte); font-weight: 600; }
 h3 { margin: 20px 0 8px; font-size: 1.1rem; }
 
 /* Conjugaison : feuille d'évaluation */
@@ -496,7 +500,7 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
 }
 .partie-eval input.ok, .ecrit input.ok, .options button.ok { animation: juste 0.5s ease both; }
 .partie-eval input.faux, .ecrit input.faux, .options button.faux { animation: erreur 0.45s ease both; }
-.corr-item:not([hidden]), #correction:not([hidden]) { animation: apparition 0.35s ease both; }
+.corr-item:not([hidden]), #correction:not([hidden]), #esp-correction:not([hidden]) { animation: apparition 0.35s ease both; }
 
 /* Moins de mouvements si le téléphone ou l'ordinateur le demande */
 @media (prefers-reduced-motion: reduce) {
@@ -641,3 +645,25 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
   color: var(--texte);
   animation: apparition 0.3s ease both;
 }
+
+/* Quiz des communautés autonomes */
+.carte-espagne { margin-bottom: 4px; touch-action: manipulation; }
+.carte-espagne svg { max-height: 70vh; }
+.carte-svg .zona { fill: var(--pays); }
+.carte-svg .gibraltar { fill: var(--terre); }
+.carte-svg .cadre-canarias { fill: none; stroke: var(--trait); stroke-width: 1; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+.carte-svg .repere-ville { stroke: var(--trait); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.carte-svg circle.zona { stroke: var(--trait); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.carte-espagne.actif.mode-zona .zona { cursor: pointer; }
+.carte-espagne.actif.mode-ville svg { cursor: crosshair; }
+@media (hover: hover) {
+  .carte-espagne.actif.mode-zona .zona:hover { fill: var(--pays-survol); }
+}
+.carte-svg .zona.ok { fill: var(--ok); }
+.carte-svg .zona.faux { fill: var(--faux); }
+.carte-svg .point { stroke: var(--surface); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.carte-svg .point.ok { fill: var(--ok); }
+.carte-svg .point.faux { fill: var(--faux); }
+.carte-svg .point.vrai { fill: var(--texte); }
+.carte-svg .ecart { stroke: var(--texte); stroke-width: 1.5; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; fill: none; }
+.legende-carte { font-size: 0.85rem; color: var(--doux); margin: 0 0 10px; }

@@ -1,7 +1,9 @@
 # Révisions d'espagnol
 
-Site en deux parties, choisies au menu d'accueil :
+Site en trois parties, choisies au menu d'accueil :
 - **Pays hispanophones** : quiz sur les 20 pays où l'espagnol est langue officielle ;
+- **Communautés autonomes** : situer sur la carte les communautés d'Espagne, Ceuta, Melilla
+  et les 20 villes les plus peuplées ;
 - **Conjugaison** : évaluations sur le modèle des contrôles du cours, liste des verbes avec leur fiche
   et tableaux des terminaisons (présent, prétérit,
   imparfait de l'indicatif, futur, conditionnel, imparfait du subjonctif).
@@ -14,6 +16,9 @@ Site en deux parties, choisies au menu d'accueil :
 | `css/style.css` | L'apparence (couleurs, tailles, version téléphone) |
 | `js/pays.js` | **Les données des pays (à modifier)** |
 | `js/verbes.js` | **La banque de verbes (à modifier)** |
+| `js/espagne.js` | **Les communautés autonomes et les 20 villes (à modifier)** |
+| `js/carte-espagne.js` | La carte de l'Espagne (générée automatiquement, ne pas toucher) |
+| `js/communautes.js` | La logique du quiz des communautés autonomes |
 | `js/carte.js` | Les contours des pays (généré automatiquement, ne pas toucher) |
 | `js/app.js` | La logique du quiz des pays |
 | `js/conjugaison.js` | Le moteur de conjugaison et l'écran d'évaluation |
@@ -31,6 +36,11 @@ tient en une ligne : `{ inf: "nadar", fr: "nager" },`. Pour un verbe particulier
 on indique seulement ce qui change (diphtongue, radical du prétérit, du futur...).
 En bas du fichier, deux listes indiquent quels verbes peuvent sortir avec un pronom
 (`alabarlo`, `elegirse`).
+
+## Changer une ville
+
+Ouvre `js/espagne.js`. Chaque ville tient en une ligne (nom, latitude, longitude, code de la
+communauté, population). Le mode d'emploi est en haut du fichier.
 
 ## Tester sur ton ordinateur
 
@@ -69,5 +79,7 @@ Le site en ligne se met à jour en une minute environ.
 ## Crédits
 
 Contours des pays : Natural Earth (domaine public), via le paquet world-atlas.
+Carte de l'Espagne : paquet es-atlas, d'après l'Instituto Geográfico Nacional (licence CC BY 4.0).
+Population des villes : INE, au 1er janvier 2025.
 Photos des dirigeants : Wikimedia Commons. L'auteur et la licence de chaque photo sont
 dans `js/pays.js` et s'affichent en bas du site, dans « Crédits des photos ».
