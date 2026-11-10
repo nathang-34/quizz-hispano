@@ -4,7 +4,7 @@ Site en trois parties, choisies au menu d'accueil :
 - **Pays hispanophones** : quiz sur les 20 pays où l'espagnol est langue officielle,
   et un onglet Révision avec une carte à explorer ;
 - **Communautés autonomes** : situer sur la carte les communautés d'Espagne, Ceuta, Melilla
-  et les 20 villes les plus peuplées, avec aussi un onglet Révision ;
+  et 20 grandes villes (au moins une par communauté), avec aussi un onglet Révision ;
 - **Conjugaison** : évaluations sur le modèle des contrôles du cours, liste des verbes avec leur fiche
   et tableaux des terminaisons (présent, prétérit,
   imparfait de l'indicatif, futur, conditionnel, imparfait du subjonctif).

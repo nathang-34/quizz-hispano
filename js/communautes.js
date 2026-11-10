@@ -2,14 +2,14 @@
 
 /* ================================================================
    QUIZ DES COMMUNAUTÉS AUTONOMES
-   Situer les communautés et les 20 plus grandes villes sur la carte.
+   Situer les communautés et 20 grandes villes sur la carte.
    Les données sont dans js/espagne.js, la carte dans js/carte-espagne.js.
    ================================================================ */
 
 const Communautes = (() => {
   const TYPES_ESP = [
     { id: "comunidad", label: "Situer la communauté autonome (et Ceuta, Melilla)" },
-    { id: "ciudad", label: "Situer l'une des 20 plus grandes villes" },
+    { id: "ciudad", label: "Situer l'une des 20 grandes villes" },
     { id: "nom_comunidad", label: "Écrire le nom de la communauté en couleur" },
     { id: "nom_ciudad", label: "Écrire le nom de la ville marquée" },
   ];
@@ -18,7 +18,7 @@ const Communautes = (() => {
   const TOLERANCE_KM = 50; // une ville est juste si le clic est à moins de 50 km
   const NS = "http://www.w3.org/2000/svg";
   const P = CARTE_ESPAGNE.projection;
-  const VUE = { x: -740, y: -4395, l: 1090, h: 1110 };
+  const VUE = { x: -740, y: -4415, l: 1090, h: 1130 };
   // Encadré des Canaries (coordonnées de la carte)
   const CANARIAS = { x: -724, y: -3500, l: 390, h: 200 };
   // Ceuta et Melilla sont minuscules : un rond cliquable est placé juste au sud de chacune

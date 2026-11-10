@@ -711,3 +711,9 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
   .fiche-lieu .photo { width: 72px; }
 }
 @media (prefers-reduced-motion: reduce) { .fiche-lieu.remplie { animation: none; } }
+/* Mini-carte d'une communauté dans sa fiche */
+.fiche-lieu.remplie { flex-wrap: wrap; }
+.fiche-lieu.remplie > div { flex: 1 1 220px; min-width: 0; }
+.fiche-lieu .mini { flex: 1 1 240px; margin: 0; min-width: 0; }
+.mini-carte { display: block; width: 100%; height: auto; max-height: 260px; border: 1px solid var(--bord); border-radius: 8px; }
+.carte-svg .voisin { fill: var(--terre); }

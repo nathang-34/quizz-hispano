@@ -14,7 +14,6 @@ const Revision = (() => {
     return e;
   };
   const nombreFr = (n) => n.toLocaleString("fr-FR");
-  const rang = (i) => (i === 0 ? "1re" : `${i + 1}e`);
 
   /* ----- Onglets Quiz / Révision ----- */
 
@@ -161,6 +160,7 @@ const Revision = (() => {
     let noms = "comunidades";
     let marquerComunidades = null;
     let marquerCiudades = null;
+    let redessinerMini = null; // mini-carte de la fiche ouverte, à redessiner si l'écran change de taille
 
     // Coupe un nom long en deux lignes : "Comunidad / Valenciana"
     function lignes(nom) {
@@ -208,11 +208,16 @@ const Revision = (() => {
       } else if (noms === "ciudades") {
         for (const v of CIUDADES) {
           const p = Communautes.projeter(v.lat, v.lon);
-          const gauche = v.ancre === "end";
           const decalage = 8 * upp;
+          // Nom à droite du point, à gauche ("end"), au-dessus ("haut") ou en dessous ("bas")
+          let x = p.x + decalage;
+          let y = p.y;
+          let alignement = "start";
+          if (v.ancre === "end") { x = p.x - decalage; alignement = "end"; }
+          if (v.ancre === "haut") { x = p.x; y = p.y - 11 * upp; alignement = "middle"; }
+          if (v.ancre === "bas") { x = p.x; y = p.y + 12 * upp; alignement = "middle"; }
           const texte = creerSvg("text", {
-            x: p.x + (gauche ? -decalage : decalage), y: p.y,
-            "font-size": taille.toFixed(1), "text-anchor": gauche ? "end" : "start", "dominant-baseline": "middle",
+            x, y, "font-size": taille.toFixed(1), "text-anchor": alignement, "dominant-baseline": "middle",
             class: "nom-carte nom-ciudad", lang: "es",
           });
           texte.textContent = v.nombre;
@@ -247,29 +252,86 @@ const Revision = (() => {
         const ul = el("ul", { class: "villes-fiche" });
         villes.forEach((v) => {
           const li = el("li");
-          li.append(es(v.nombre), ` (${rang(CIUDADES.indexOf(v))} ville d'Espagne)`);
+          li.append(es(v.nombre));
+          if (v.capital.startsWith("Oui")) li.append(" (capitale)");
           ul.append(li);
         });
         ligne(dl, villes.length > 1 ? "Grandes villes" : "Grande ville", ul);
-      } else {
-        ligne(dl, "Grandes villes", "Aucune ville de la liste des 20");
       }
       texte.append(dl);
       fiche.append(texte);
       fiche.classList.add("remplie");
+      // Carte de la communauté avec ses villes (seulement s'il y a des villes)
+      redessinerMini = villes.length ? miniCarte(fiche, c, villes) : null;
       if (depuisListe) fiche.scrollIntoView({ block: "nearest", behavior: mouvementReduit() ? "auto" : "smooth" });
+    }
+
+    // Petite carte zoomée sur une communauté, avec l'emplacement exact de ses villes
+    function miniCarte(fiche, c, villes) {
+      const b = zonas[c.codigo][0].getBBox();
+      const marge = Math.max(12, Math.max(b.width, b.height) * 0.1);
+      const vue = [b.x - marge, b.y - marge, b.width + 2 * marge, b.height + 2 * marge];
+      const mini = creerSvg("svg", {
+        viewBox: vue.map((n) => n.toFixed(1)).join(" "), class: "carte-svg mini-carte",
+        role: "img", "aria-label": `Carte de ${c.nombre} et de ses villes`,
+      });
+      mini.append(creerSvg("rect", { class: "mer", x: vue[0] - 500, y: vue[1] - 500, width: vue[2] + 1000, height: vue[3] + 1000 }));
+      // Les communautés voisines en gris, celle de la fiche en couleur
+      for (const [code, d] of Object.entries(CARTE_ESPAGNE.zonas)) {
+        mini.append(creerSvg("path", { d, class: code === c.codigo ? "zona choisi" : "voisin" }));
+      }
+      const couche = creerSvg("g");
+      mini.append(couche);
+      const figure = el("figure", { class: "mini" });
+      figure.append(mini);
+      fiche.append(figure);
+
+      // Points et noms à une taille fixe à l'écran, quelle que soit la taille de la communauté
+      const dessiner = () => {
+        const m = mini.getScreenCTM();
+        if (!m || !m.a) return;
+        const upp = 1 / m.a;
+        couche.innerHTML = "";
+        for (const v of villes) {
+          const p = Communautes.projeter(v.lat, v.lon);
+          couche.append(creerSvg("circle", { class: "ville", cx: p.x, cy: p.y, r: (5 * upp).toFixed(2) }));
+          const texte = creerSvg("text", {
+            x: p.x + 8 * upp, y: p.y,
+            "font-size": (12 * upp).toFixed(2), "text-anchor": "start",
+            "dominant-baseline": "middle", class: "nom-carte nom-ciudad", lang: "es",
+          });
+          texte.textContent = v.nombre;
+          couche.append(texte);
+          // Le nom doit rester dans la carte : à droite du point, sinon à gauche, sinon en dessous
+          const largeur = texte.getComputedTextLength();
+          if (p.x + 8 * upp + largeur > vue[0] + vue[2]) {
+            if (p.x - 8 * upp - largeur >= vue[0]) {
+              texte.setAttribute("x", p.x - 8 * upp);
+              texte.setAttribute("text-anchor", "end");
+            } else {
+              const x = Math.min(Math.max(p.x, vue[0] + largeur / 2 + 4 * upp), vue[0] + vue[2] - largeur / 2 - 4 * upp);
+              texte.setAttribute("x", x);
+              texte.setAttribute("y", p.y + 14 * upp);
+              texte.setAttribute("text-anchor", "middle");
+            }
+          }
+        }
+      };
+      dessiner();
+      return dessiner;
     }
 
     function ouvrirCiudad(i, depuisListe) {
       const v = CIUDADES[i];
       choisir("v" + i);
+      redessinerMini = null;
       const fiche = $("#rev-esp-fiche");
       fiche.innerHTML = "";
       const texte = el("div");
       texte.append(el("h3", { lang: "es" }, v.nombre));
       const dl = el("dl");
       ligne(dl, "Communauté autonome", es(COMUNIDADES.find((c) => c.codigo === v.comunidad).nombre));
-      ligne(dl, "Rang", `${rang(i)} ville d'Espagne`);
+      ligne(dl, "Capitale de la communauté", v.capital);
       ligne(dl, "Habitants", `${nombreFr(v.poblacion)} (INE, 2025)`);
       texte.append(dl);
       fiche.append(texte);
@@ -303,7 +365,7 @@ const Revision = (() => {
       marquerComunidades = pastilles($("#rev-esp-comunidades"),
         comunidades.map((c) => ({ id: "c" + c.codigo, label: c.nombre })), (id) => ouvrirComunidad(id.slice(1), true));
       marquerCiudades = pastilles($("#rev-esp-ciudades"),
-        CIUDADES.map((v, i) => ({ id: "v" + i, label: `${i + 1}. ${v.nombre}` })), (id) => ouvrirCiudad(Number(id.slice(1)), true));
+        CIUDADES.map((v, i) => ({ id: "v" + i, label: v.nombre })), (id) => ouvrirCiudad(Number(id.slice(1)), true));
 
       document.querySelectorAll("#rev-esp-noms button").forEach((b) => {
         b.addEventListener("click", () => {
@@ -312,7 +374,10 @@ const Revision = (() => {
           dessinerNoms();
         });
       });
-      window.addEventListener("resize", dessinerNoms);
+      window.addEventListener("resize", () => {
+        dessinerNoms();
+        if (redessinerMini) redessinerMini();
+      });
       creerOnglets($("#partie-espagne"), $("#esp-ecran-quiz"), dessinerNoms);
     }
 

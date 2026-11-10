@@ -9,7 +9,7 @@
   const PARTIES = {
     accueil: { sousTitre: "Choisis ce que tu veux travailler.", titre: "Révisions d'espagnol" },
     pays: { sousTitre: "Les 20 pays où l'espagnol est langue officielle", titre: "Pays hispanophones" },
-    espagne: { sousTitre: "Les communautés autonomes et les 20 plus grandes villes d'Espagne", titre: "Communautés autonomes" },
+    espagne: { sousTitre: "Les communautés autonomes et 20 grandes villes d'Espagne", titre: "Communautés autonomes" },
     conjugaison: { sousTitre: "Évaluations de conjugaison", titre: "Conjugaison" },
   };
 
