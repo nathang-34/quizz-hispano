@@ -61,7 +61,7 @@ const Memo = (() => {
   // Pendant une évaluation non corrigée, Verbes et Terminaisons sont bloqués
   function majVerrou() {
     const bloque = verrouille();
-    for (const b of document.querySelectorAll(".onglets [role=tab]")) {
+    for (const b of document.querySelectorAll("#partie-conjugaison .onglets [role=tab]")) {
       if (b.dataset.onglet !== "eval") b.setAttribute("aria-disabled", String(bloque));
     }
     if (!bloque) $("#onglets-verrou").hidden = true;
@@ -74,7 +74,7 @@ const Memo = (() => {
     }
     defilement[ongletActuel] = window.scrollY;
     ongletActuel = nom;
-    for (const b of document.querySelectorAll(".onglets [role=tab]")) {
+    for (const b of document.querySelectorAll("#partie-conjugaison .onglets [role=tab]")) {
       b.setAttribute("aria-selected", String(b.dataset.onglet === nom));
     }
     $("#onglet-eval").hidden = nom !== "eval";
@@ -273,7 +273,7 @@ const Memo = (() => {
 
   return {
     initialiser() {
-      for (const b of document.querySelectorAll(".onglets [role=tab]")) {
+      for (const b of document.querySelectorAll("#partie-conjugaison .onglets [role=tab]")) {
         b.addEventListener("click", () => afficherOnglet(b.dataset.onglet));
       }
       creerFiltres();

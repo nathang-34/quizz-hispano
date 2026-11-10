@@ -55,6 +55,13 @@
 
     <!-- ===== PARTIE PAYS ===== -->
     <div id="partie-pays" hidden>
+    <div class="onglets" role="tablist" aria-label="Pays hispanophones">
+      <button type="button" role="tab" data-onglet="quiz" aria-selected="true">Quiz</button>
+      <button type="button" role="tab" data-onglet="revision" aria-selected="false">Révision</button>
+    </div>
+    <p class="aide verrou" role="status" hidden>L'onglet Révision s'ouvrira à la fin du quiz.</p>
+
+    <div data-panneau="quiz" role="tabpanel">
     <!-- ÉCRAN 1 : RÉGLAGES -->
     <section id="ecran-reglages" class="ecran">
       <form id="form-reglages">
@@ -161,8 +168,38 @@
     </section>
     </div>
 
+    <!-- Onglet Révision : carte à explorer -->
+    <section data-panneau="revision" class="ecran" role="tabpanel" hidden>
+      <p class="aide">Clique sur un pays de la carte, ou choisis-le dans la liste, pour voir sa fiche.</p>
+      <div class="segments petit" id="rev-pays-vue">
+        <button type="button" data-vue="generale" aria-pressed="true">Vue générale</button>
+        <button type="button" data-vue="zoom" aria-pressed="false">Zoom Amérique centrale et Caraïbes</button>
+      </div>
+      <div id="rev-pays-am" class="cadre-carte carte-revision"></div>
+      <div class="encadres">
+        <figure>
+          <figcaption>Europe</figcaption>
+          <div id="rev-pays-eu" class="cadre-carte carte-revision"></div>
+        </figure>
+        <figure>
+          <figcaption>Afrique</figcaption>
+          <div id="rev-pays-af" class="cadre-carte carte-revision"></div>
+        </figure>
+      </div>
+      <div id="rev-pays-fiche" class="fiche-lieu" aria-live="polite"></div>
+      <div id="rev-pays-liste"></div>
+    </section>
+    </div>
+
     <!-- ===== PARTIE COMMUNAUTÉS AUTONOMES ===== -->
     <div id="partie-espagne" hidden>
+      <div class="onglets" role="tablist" aria-label="Communautés autonomes">
+        <button type="button" role="tab" data-onglet="quiz" aria-selected="true">Quiz</button>
+        <button type="button" role="tab" data-onglet="revision" aria-selected="false">Révision</button>
+      </div>
+      <p class="aide verrou" role="status" hidden>L'onglet Révision s'ouvrira à la fin du quiz.</p>
+
+      <div data-panneau="quiz" role="tabpanel">
       <section id="esp-ecran-reglages" class="ecran">
         <form id="esp-form">
           <fieldset>
@@ -230,6 +267,23 @@
           <button type="button" class="bouton" id="esp-nouvelles">Nouvelles questions</button>
           <button type="button" class="bouton" id="esp-modifier">Modifier les réglages</button>
         </div>
+      </section>
+      </div>
+
+      <!-- Onglet Révision : carte à explorer -->
+      <section data-panneau="revision" class="ecran" role="tabpanel" hidden>
+        <p class="aide">Clique sur une communauté ou sur le point d'une ville, ou choisis dans les listes, pour voir sa fiche.</p>
+        <div class="segments petit" id="rev-esp-noms" role="group" aria-label="Noms écrits sur la carte">
+          <button type="button" data-noms="comunidades" aria-pressed="true">Noms des communautés</button>
+          <button type="button" data-noms="ciudades" aria-pressed="false">Noms des villes</button>
+          <button type="button" data-noms="ninguno" aria-pressed="false">Aucun nom</button>
+        </div>
+        <div id="rev-esp-carte" class="cadre-carte carte-espagne carte-revision"></div>
+        <div id="rev-esp-fiche" class="fiche-lieu" aria-live="polite"></div>
+        <h3>Communautés autonomes</h3>
+        <div class="filtres" id="rev-esp-comunidades"></div>
+        <h3>Les 20 plus grandes villes</h3>
+        <div class="filtres" id="rev-esp-ciudades"></div>
       </section>
     </div>
 
@@ -355,6 +409,7 @@
   <script src="js/espagne.js"></script>
   <script src="js/carte-espagne.js"></script>
   <script src="js/communautes.js"></script>
+  <script src="js/revision.js"></script>
   <script src="js/verbes.js"></script>
   <script src="js/conjugaison.js"></script>
   <script src="js/memo.js"></script>

@@ -130,27 +130,45 @@ const Communautes = (() => {
     return m && m.a > 0 ? 1 / m.a : 2;
   }
 
-  function creerCarte() {
-    svg = creerSvg("svg", { viewBox: `${VUE.x} ${VUE.y} ${VUE.l} ${VUE.h}`, class: "carte-svg" });
-    svg.append(creerSvg("rect", { class: "mer", x: VUE.x - 500, y: VUE.y - 500, width: VUE.l + 1000, height: VUE.h + 1000 }));
+  // Dessine la carte de l'Espagne (aussi utilisée par l'onglet Révision).
+  // Renvoie le svg et, pour chaque code, ses éléments cliquables.
+  function construireCarte() {
+    const carte = creerSvg("svg", { viewBox: `${VUE.x} ${VUE.y} ${VUE.l} ${VUE.h}`, class: "carte-svg" });
+    const elements = {};
+    carte.append(creerSvg("rect", { class: "mer", x: VUE.x - 500, y: VUE.y - 500, width: VUE.l + 1000, height: VUE.h + 1000 }));
     const c = CANARIAS;
-    svg.append(creerSvg("rect", { class: "cadre-canarias", x: c.x, y: c.y, width: c.l, height: c.h, rx: 6 }));
+    carte.append(creerSvg("rect", { class: "cadre-canarias", x: c.x, y: c.y, width: c.l, height: c.h, rx: 6 }));
     for (const [code, d] of Object.entries(CARTE_ESPAGNE.zonas)) {
       const chemin = creerSvg("path", { d, class: code === "20" ? "gibraltar" : "zona" });
       if (code !== "20") {
         chemin.dataset.code = code;
-        (zonas[code] = zonas[code] || []).push(chemin);
+        (elements[code] = elements[code] || []).push(chemin);
       }
-      svg.append(chemin);
+      carte.append(chemin);
     }
     for (const r of RONDS) {
       const vrai = projeter(r.lat, r.lon);
-      svg.append(creerSvg("line", { class: "repere-ville", x1: vrai.x, y1: vrai.y, x2: vrai.x, y2: vrai.y + r.decalage }));
+      carte.append(creerSvg("line", { class: "repere-ville", x1: vrai.x, y1: vrai.y, x2: vrai.x, y2: vrai.y + r.decalage }));
       const rond = creerSvg("circle", { class: "zona rond", cx: vrai.x, cy: vrai.y + r.decalage, r: 14 });
       rond.dataset.code = r.codigo;
-      zonas[r.codigo].push(rond);
-      svg.append(rond);
+      elements[r.codigo].push(rond);
+      carte.append(rond);
     }
+    return { svg: carte, zonas: elements };
+  }
+
+  // Taille des ronds de Ceuta et Melilla dans une carte : assez gros pour un doigt
+  function ajusterRondsDe(carte) {
+    const m = carte.getScreenCTM();
+    if (!m || !m.a) return;
+    const r = Math.min(30, Math.max(12, 11 / m.a));
+    carte.querySelectorAll("circle.rond").forEach((c) => c.setAttribute("r", r.toFixed(1)));
+  }
+
+  function creerCarte() {
+    const carte = construireCarte();
+    svg = carte.svg;
+    Object.assign(zonas, carte.zonas);
     couche = creerSvg("g", {});
     svg.append(couche);
     svg.addEventListener("click", (e) => {
@@ -167,8 +185,7 @@ const Communautes = (() => {
 
   // Taille des ronds de Ceuta et Melilla : assez gros pour un doigt sur téléphone
   function ajusterRonds() {
-    const r = Math.min(30, Math.max(12, 11 * unitesParPixel()));
-    svg.querySelectorAll("circle.rond").forEach((c) => c.setAttribute("r", r.toFixed(1)));
+    ajusterRondsDe(svg);
   }
 
   function preparerCarte(mode, fonction) {
@@ -476,7 +493,7 @@ const Communautes = (() => {
     $("#esp-modifier").addEventListener("click", () => afficherEcran("reglages"));
   }
 
-  return { initialiser, projeter };
+  return { initialiser, projeter, construireCarte, ajusterRondsDe };
 })();
 
 document.addEventListener("DOMContentLoaded", () => Communautes.initialiser());

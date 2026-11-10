@@ -673,3 +673,41 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
 @keyframes pulsation { 50% { transform: scale(1.5); } }
 @media (prefers-reduced-motion: reduce) { .carte-svg .point.cible { animation: none; } }
 #esp-reponses .ecrit { margin-top: 12px; }
+
+/* Onglets Révision : cartes à explorer */
+.carte-revision .pays, .carte-revision .zona, .carte-revision .ville { cursor: pointer; }
+@media (hover: hover) {
+  .carte-revision .pays:hover, .carte-revision .zona:hover { fill: var(--pays-survol); }
+}
+.carte-svg .pays.choisi, .carte-svg .zona.choisi { fill: var(--accent); }
+.carte-svg .ville { fill: var(--terracotta); stroke: var(--surface); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.carte-svg .ville.choisi { fill: var(--texte); }
+.etiquettes-carte { pointer-events: none; }
+.nom-carte { fill: var(--texte); paint-order: stroke; stroke: var(--pays); stroke-width: 3px; stroke-linejoin: round; font-weight: 600; }
+.nom-ciudad { stroke: var(--mer); font-weight: 700; }
+#rev-esp-noms, #rev-pays-vue { margin-bottom: 8px; }
+.fiche-lieu {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--bord);
+  border-left: 5px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.fiche-lieu.remplie { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; animation: apparition 0.3s ease both; }
+.fiche-lieu > p { margin: 0; }
+.fiche-lieu h3 { margin: 0 0 6px; color: var(--accent); font-size: 1.25rem; }
+.fiche-lieu dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; }
+.fiche-lieu dt { color: var(--doux); }
+.fiche-lieu dd { margin: 0; font-weight: 600; }
+.fiche-lieu .photo { width: 96px; margin: 0; flex-shrink: 0; }
+.villes-fiche { margin: 0; padding-left: 18px; font-weight: 600; }
+.villes-fiche li { font-weight: 400; }
+.villes-fiche li span { font-weight: 600; }
+#rev-pays-liste h3 { margin: 16px 0 6px; font-size: 1rem; color: var(--doux); }
+@media (max-width: 480px) {
+  .fiche-lieu dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .fiche-lieu dd { margin-bottom: 6px; }
+  .fiche-lieu .photo { width: 72px; }
+}
+@media (prefers-reduced-motion: reduce) { .fiche-lieu.remplie { animation: none; } }

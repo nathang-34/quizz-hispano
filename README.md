@@ -1,9 +1,10 @@
 # Révisions d'espagnol
 
 Site en trois parties, choisies au menu d'accueil :
-- **Pays hispanophones** : quiz sur les 20 pays où l'espagnol est langue officielle ;
+- **Pays hispanophones** : quiz sur les 20 pays où l'espagnol est langue officielle,
+  et un onglet Révision avec une carte à explorer ;
 - **Communautés autonomes** : situer sur la carte les communautés d'Espagne, Ceuta, Melilla
-  et les 20 villes les plus peuplées ;
+  et les 20 villes les plus peuplées, avec aussi un onglet Révision ;
 - **Conjugaison** : évaluations sur le modèle des contrôles du cours, liste des verbes avec leur fiche
   et tableaux des terminaisons (présent, prétérit,
   imparfait de l'indicatif, futur, conditionnel, imparfait du subjonctif).
@@ -19,6 +20,7 @@ Site en trois parties, choisies au menu d'accueil :
 | `js/espagne.js` | **Les communautés autonomes et les 20 villes (à modifier)** |
 | `js/carte-espagne.js` | La carte de l'Espagne (générée automatiquement, ne pas toucher) |
 | `js/communautes.js` | La logique du quiz des communautés autonomes |
+| `js/revision.js` | Les onglets Révision (cartes à explorer) des pays et des communautés |
 | `js/carte.js` | Les contours des pays (généré automatiquement, ne pas toucher) |
 | `js/app.js` | La logique du quiz des pays |
 | `js/conjugaison.js` | Le moteur de conjugaison et l'écran d'évaluation |
