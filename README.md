@@ -7,7 +7,7 @@ Site en trois parties, choisies au menu d'accueil :
   et 20 grandes villes (au moins une par communauté), avec aussi un onglet Révision ;
 - **Conjugaison** : évaluations sur le modèle des contrôles du cours, liste des verbes avec leur fiche
   et tableaux des terminaisons (présent, prétérit,
-  imparfait de l'indicatif, futur, conditionnel, imparfait du subjonctif).
+  imparfait de l'indicatif, futur, conditionnel, imparfait du subjonctif, gérondif, participe passé).
 
 ## Contenu du dossier
 
@@ -35,7 +35,8 @@ Chaque évaluation de conjugaison est tirée au hasard dans la banque de verbes.
 
 Ouvre `js/verbes.js`. Le mode d'emploi est en haut du fichier. Un verbe régulier
 tient en une ligne : `{ inf: "nadar", fr: "nager" },`. Pour un verbe particulier,
-on indique seulement ce qui change (diphtongue, radical du prétérit, du futur...).
+on indique seulement ce qui change (diphtongue, radical du prétérit, du futur,
+participe passé irrégulier...).
 En bas du fichier, deux listes indiquent quels verbes peuvent sortir avec un pronom
 (`alabarlo`, `elegirse`).
 

@@ -13,7 +13,11 @@ const TEMPS = [
   { id: "futuro", label: "Futur", titre: "Mets au futur" },
   { id: "condicional", label: "Conditionnel", titre: "Mets au conditionnel" },
   { id: "subjuntivo", label: "Imparfait du subjonctif", titre: "Mets à l'imparfait du subjonctif" },
+  // Formes sans personne : une seule réponse par verbe
+  { id: "gerundio", label: "Gérondif", titre: "Donne le gérondif", seule: true },
+  { id: "participio", label: "Participe passé", titre: "Donne le participe passé", seule: true },
 ];
+const SANS_PERSONNE = new Set(TEMPS.filter((t) => t.seule).map((t) => t.id));
 
 const CATEGORIES = [
   { id: "irregulier", label: "Irréguliers" },
@@ -214,7 +218,34 @@ function conjuguer(base, temps, d = particularites(base, base)) {
       return [rr + TERMINAISONS.subjRa[p], rr + TERMINAISONS.subjSe[p]];
     });
   }
+
+  // Gérondif et participe : une seule « personne »
+  if (temps === "gerundio") {
+    if (d.ger) return [enListe(d.ger)];
+    let r = radical;
+    // Verbes en -ir : sintiendo, durmiendo, pidiendo
+    if (classe === "ir" && d.dip) r = d.dip === "ue" ? changerVoyelle(r, "o", "u") : changerVoyelle(r, "e", "i");
+    let f = groupe === "ar" ? "ando" : "iendo";
+    if (groupe === "er" && !brut) {
+      if (/[aeo]$/.test(r) || (uir && r.endsWith("u"))) f = "yendo"; // leyendo, construyendo
+      else if (/(ñ|ll)$/.test(r)) f = "endo"; // riñendo
+    }
+    return [[r + f]];
+  }
+
+  if (temps === "participio") {
+    if (d.part) return [enListe(d.part)];
+    let f = groupe === "ar" ? "ado" : "ido";
+    if (groupe === "er" && !brut && /[aeo]$/.test(radical)) f = "ído"; // leído, oído
+    return [[radical + f]];
+  }
   throw new Error("Temps inconnu : " + temps);
+}
+
+// Gérondif avec pronom collé à la fin : l'accent écrit apparaît (levantándose, diciéndolo, yéndose)
+function enclitique(forme, pronoms) {
+  if (!pronoms) return forme;
+  return forme.replace(/([ae])ndo$/, (m, v) => ACCENTUEE[v] + "ndo") + pronoms;
 }
 
 // Formes attendues pour une question { temps, verbe, pronom, p }
@@ -222,6 +253,11 @@ function solution(q) {
   const { base, objet, reflechi } = analyserVerbe(q.verbe);
   const d = particularites(base, reflechi ? base + "se" : base);
   const toutes = conjuguer(base, q.temps, d);
+  if (SANS_PERSONNE.has(q.temps)) {
+    const pronoms = q.temps === "gerundio" ? (reflechi ? "se" : "") + (objet || "") : "";
+    const formes = toutes[0].map((f) => enclitique(f, pronoms));
+    return { formes, acceptees: formes, tableau: [formes.join(" / ")] };
+  }
   const avecPronoms = (p, f) => [reflechi ? REFLECHIS[p] : "", objet || "", f].filter(Boolean).join(" ");
   const formes = toutes[q.p].map((f) => avecPronoms(q.p, f));
   return {
@@ -258,7 +294,7 @@ function categoriesTemps(v, temps) {
     const pareil = (a, b) => a.join("/") === b.join("/");
     cats = new Set();
     // Personne par personne : une forme irrégulière (digo) ne compte pas aussi pour l'orthographe
-    for (let p = 0; p < 6; p++) {
+    for (let p = 0; p < complet.length; p++) {
       if (!pareil(complet[p], simple[p])) { cats.add("irregulier"); continue; }
       if (!pareil(simple[p], brut[p])) cats.add("orthographe");
       if (!pareil(brut[p], sansVoyelle[p])) {
@@ -307,13 +343,19 @@ const Conjugaison = (() => {
     };
     try {
       const sauve = JSON.parse(localStorage.getItem(CLE));
-      if (sauve && Array.isArray(sauve.temps) && Array.isArray(sauve.categories)) return { ...defaut, ...sauve };
+      if (sauve && Array.isArray(sauve.temps) && Array.isArray(sauve.categories)) {
+        // Les temps ajoutés au site depuis la dernière visite sont cochés
+        const vus = Array.isArray(sauve.vus) ? sauve.vus : TEMPS.filter((t) => !t.seule).map((t) => t.id);
+        const nouveaux = defaut.temps.filter((t) => !vus.includes(t));
+        return { ...defaut, ...sauve, temps: [...sauve.temps, ...nouveaux] };
+      }
     } catch (e) { /* valeurs par défaut */ }
     return defaut;
   }
 
   function sauver() {
-    try { localStorage.setItem(CLE, JSON.stringify(reglages)); } catch (e) { /* ignoré */ }
+    const vus = TEMPS.map((t) => t.id);
+    try { localStorage.setItem(CLE, JSON.stringify({ ...reglages, vus })); } catch (e) { /* ignoré */ }
   }
 
   function afficher(nom) {
@@ -326,8 +368,10 @@ const Conjugaison = (() => {
   /* ----- Réglages ----- */
 
   // Verbes qui sont, à ce temps, d'un des types cochés
+  // (le participe passé ne se demande pas sur un verbe pronominal)
   function verbesPour(temps) {
-    return VERBOS.filter((v) => [...categoriesTemps(v, temps)].some((c) => reglages.categories.includes(c)));
+    return VERBOS.filter((v) => !(temps === "participio" && analyserVerbe(v.inf).reflechi))
+      .filter((v) => [...categoriesTemps(v, temps)].some((c) => reglages.categories.includes(c)));
   }
 
   // Temps cochés qui ont au moins un verbe des types cochés
@@ -402,11 +446,12 @@ const Conjugaison = (() => {
 
     const cases = temps.flatMap((t, i) => Array(parTemps[i]).fill(t));
 
-    // Entre 30 et 40 % des questions portent sur un verbe avec pronom
+    // Entre 30 et 40 % des questions portent sur un verbe avec pronom (jamais au participe passé)
+    const possibles = cases.map((t, i) => i).filter((i) => cases[i] !== "participio");
     const min = Math.ceil(n * PART_PRONOMS[0]);
     const max = Math.floor(n * PART_PRONOMS[1]);
     const nbPronoms = min + Math.floor(Math.random() * (max - min + 1));
-    const avecPronom = new Set(melanger(cases.map((_, i) => i)).slice(0, nbPronoms));
+    const avecPronom = new Set(melanger(possibles).slice(0, nbPronoms));
 
     const dejaPris = new Set();
     // Choisit un verbe pas encore utilisé dans cette évaluation (si possible)
@@ -427,6 +472,7 @@ const Conjugaison = (() => {
         if (v) verbe = hasard(variantesPronom(v));
       }
       if (!verbe) verbe = (piocher(verbes.filter((x) => !analyserVerbe(x.inf).reflechi)) || piocher(verbes)).inf;
+      if (SANS_PERSONNE.has(t)) return { temps: t, verbe, pronom: null, p: 0 };
       const p = Math.floor(Math.random() * 6);
       return { temps: t, verbe, pronom: hasard(PERSONNES[p]), p };
     });
@@ -474,7 +520,8 @@ const Conjugaison = (() => {
       const li = el("li", { class: "item" });
       const id = `conj-q${index}`;
       const label = el("label", { for: id });
-      label.append(el("span", { lang: "es" }, `${premiereMajuscule(q.verbe)} (${q.pronom})`), " :");
+      const enonce = q.pronom ? `${premiereMajuscule(q.verbe)} (${q.pronom})` : premiereMajuscule(q.verbe);
+      label.append(el("span", { lang: "es" }, enonce), " :");
       const input = el("input", {
         id, type: "text", lang: "es", autocomplete: "off", autocapitalize: "off",
         autocorrect: "off", spellcheck: "false", enterkeyhint: "next",
@@ -561,6 +608,16 @@ const Conjugaison = (() => {
     const t = TEMPS.find((x) => x.id === it.q.temps);
     const { base, reflechi } = analyserVerbe(it.q.verbe);
     const entree = BANQUE.get(it.q.verbe) || BANQUE.get(reflechi ? base + "se" : base) || BANQUE.get(base);
+    if (t.seule) {
+      // Une seule forme : pas de tableau, seulement le lien vers la fiche
+      if (entree && typeof Memo !== "undefined") {
+        const lien = el("button", { type: "button", class: "bouton lien lien-fiche" }, `Voir la fiche de ${entree.inf}`);
+        lien.addEventListener("click", () => Memo.ouvrirVerbe(entree.inf));
+        c.append(lien);
+      }
+      c.hidden = false;
+      return;
+    }
     const details = el("details", { class: "tableau-conj" });
     const resume = `Voir ${it.q.verbe} au ${t.label.toLowerCase()}` + (entree ? ` (${entree.fr})` : "");
     details.append(el("summary", {}, resume.replace("au imparfait", "à l'imparfait")));

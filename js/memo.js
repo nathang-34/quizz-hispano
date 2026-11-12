@@ -47,6 +47,17 @@ const Memo = (() => {
       "ellos tuvieron donne tuviera ou tuviese ; ellos pidieron donne pidiera ou pidiese.",
       "nosotros prend un accent écrit : tuviéramos, habláramos.",
     ],
+    gerundio: [
+      "Radical + -ando (verbes en -ar) ou -iendo (verbes en -er et en -ir).",
+      "Après une voyelle, -iendo devient -yendo : leyendo, oyendo, cayendo, trayendo, construyendo. ir donne yendo.",
+      "Verbes en -ir à diphtongue ou à affaiblissement : e > i et o > u (sintiendo, pidiendo, durmiendo, muriendo, diciendo, viniendo). poder donne pudiendo.",
+      "Les pronoms se collent à la fin et un accent écrit apparaît : levantándose, diciéndolo.",
+    ],
+    participio: [
+      "Radical + -ado (verbes en -ar) ou -ido (verbes en -er et en -ir).",
+      "Après a, e ou o, -ido prend un accent : leído, creído, oído, caído, traído. Mais construido et incluido n'en ont pas.",
+      "Avec haber, le participe ne change jamais : he comido, hemos comido.",
+    ],
   };
 
   const sansAccents = (t) => String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -139,6 +150,8 @@ const Memo = (() => {
     if (temps === "preterito") return TERMINAISONS.preterito[groupe].map((f) => r + f);
     if (temps === "imperfecto") return TERMINAISONS.imperfecto[groupe].map((f) => r + f);
     if (temps === "futuro" || temps === "condicional") return TERMINAISONS[temps].map((f) => inf + f);
+    if (temps === "gerundio") return [r + (groupe === "ar" ? "ando" : "iendo")];
+    if (temps === "participio") return [r + (groupe === "ar" ? "ado" : "ido")];
     const b = r + (groupe === "ar" ? "a" : "ie");
     const bNous = b.slice(0, -1) + ACCENTUEE[b.slice(-1)];
     return TERMINAISONS.subjRa.map((f, p) => (p === 3 ? bNous : b) + f);
@@ -160,6 +173,8 @@ const Memo = (() => {
     if (d.yo) notes.push(`1re personne irrégulière au présent : ${d.yo}.`);
     if (typeof d.pret === "string") notes.push(`Prétérit fort sur le radical ${d.pret}-.`);
     if (d.fut) notes.push(`Futur et conditionnel sur le radical ${d.fut}-.`);
+    if (d.ger) notes.push(`Gérondif irrégulier : ${d.ger}.`);
+    if (d.part) notes.push(`Participe passé irrégulier : ${d.part}.`);
     return notes;
   }
 
@@ -204,8 +219,17 @@ const Memo = (() => {
       const table = el("table", { lang: "es" });
       formes.forEach((alts, p) => {
         const tr = el("tr");
-        tr.append(el("th", { scope: "row" }, PERSONNES_COURTES[p]));
         const td = el("td");
+        if (t.seule) {
+          // Gérondif d'un pronominal : levantándose ; participe : levantado
+          const f = alts[0];
+          const avecSe = reflechi && t.id === "gerundio" ? enclitique(f, "se") : f;
+          td.append(f !== regulieres[0] ? el("span", { class: "irr" }, avecSe) : avecSe);
+          tr.append(td);
+          table.append(tr);
+          return;
+        }
+        tr.append(el("th", { scope: "row" }, PERSONNES_COURTES[p]));
         const pronom = reflechi ? REFLECHIS[p] + " " : "";
         const affichees = t.id === "subjuntivo" ? alts : [alts[0]];
         affichees.forEach((f, i) => {
@@ -234,6 +258,25 @@ const Memo = (() => {
 
   /* ----- Terminaisons ----- */
 
+  // Liste tirée de la banque de verbes : abrir, abierto ; hacer, hecho...
+  function participesIrreguliers() {
+    const verbes = VERBOS
+      .filter((v) => !analyserVerbe(v.inf).reflechi && categoriesTemps(v, "participio").has("irregulier"))
+      .sort((a, b) => a.inf.localeCompare(b.inf, "es"));
+    const titre = el("h4", {}, "Participes irréguliers");
+    const table = el("table", { lang: "es", class: "participes" });
+    for (const v of verbes) {
+      const tr = el("tr");
+      const td = el("td");
+      td.append(el("b", {}, conjuguer(analyserVerbe(v.inf).base, "participio")[0][0]));
+      tr.append(el("td", {}, v.inf), td);
+      table.append(tr);
+    }
+    const cadre = el("div", { class: "cadre-table" });
+    cadre.append(table);
+    return [titre, cadre];
+  }
+
   function afficherTerminaisons() {
     const zone = $("#memo-terminaisons");
     for (const t of TEMPS) {
@@ -245,9 +288,9 @@ const Memo = (() => {
       EXEMPLES.forEach((v) => entete.append(el("th", { scope: "col" }, `-${v.slice(-2)}`)));
       table.append(entete);
       const conjugues = EXEMPLES.map((v) => conjuguer(v, t.id));
-      for (let p = 0; p < 6; p++) {
+      for (let p = 0; p < conjugues[0].length; p++) {
         const tr = el("tr");
-        tr.append(el("th", { scope: "row" }, PERSONNES_COURTES[p]));
+        tr.append(el("th", { scope: "row" }, t.seule ? "" : PERSONNES_COURTES[p]));
         EXEMPLES.forEach((v, k) => {
           // Le radical est l'infinitif entier au futur et au conditionnel
           const coupe = t.id === "futuro" || t.id === "condicional" ? v.length : v.length - 2;
@@ -267,6 +310,7 @@ const Memo = (() => {
       const regles = el("ul", { class: "remarques" });
       REGLES[t.id].forEach((r) => regles.append(el("li", {}, r)));
       carte.append(regles);
+      if (t.id === "participio") carte.append(...participesIrreguliers());
       zone.append(carte);
     }
   }

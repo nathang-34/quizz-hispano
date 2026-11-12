@@ -632,6 +632,8 @@ h3 { margin: 20px 0 8px; font-size: 1.1rem; }
 .carte-terminaisons thead th, .carte-terminaisons tr:first-child th { color: var(--accent); font-weight: 700; }
 .carte-terminaisons td b { color: var(--terracotta); }
 .carte-terminaisons .remarques { font-size: 0.95rem; }
+.carte-terminaisons h4 { margin: 12px 0 4px; font-size: 1rem; }
+.participes td:first-child { color: var(--doux); width: 50%; }
 .lien-fiche { padding-left: 0; display: block; margin-top: 2px; }
 
 /* Onglets bloqués pendant une évaluation non corrigée */

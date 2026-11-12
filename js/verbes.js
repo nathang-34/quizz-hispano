@@ -18,11 +18,14 @@
     imp     les 6 formes de l'imparfait (seulement ser, ir et ver)
     fut     le radical irrégulier du futur et du conditionnel (tener : "tendr")
     tilde   true si le i ou le u prend un accent au présent (enviar : envío)
+    ger     le gérondif s'il est irrégulier (poder : "pudiendo")
+    part    le participe passé s'il est irrégulier (hacer : "hecho")
     modelo  un verbe qui se conjugue de la même façon (obtener : "tener")
 
   Le subjonctif imparfait se forme tout seul à partir du prétérit
   (tuvieron donne tuviera et tuviese). Les changements d'orthographe
-  (busqué, cojo, conozco, construyo, leyó) sont aussi automatiques.
+  (busqué, cojo, conozco, construyo, leyó) sont aussi automatiques, comme
+  le gérondif et le participe passé réguliers (leyendo, sintiendo, leído).
 
   Exemples d'ajout (garde les guillemets et la virgule à la fin) :
     { inf: "nadar", fr: "nager" },
@@ -35,7 +38,7 @@ const VERBOS = [
     pres: ["soy", "eres", "es", "somos", "sois", "son"],
     pret: ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
     imp: ["era", "eras", "era", "éramos", "erais", "eran"] },
-  { inf: "ir", fr: "aller",
+  { inf: "ir", fr: "aller", ger: "yendo",
     pres: ["voy", "vas", "va", "vamos", "vais", "van"],
     pret: ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
     imp: ["iba", "ibas", "iba", "íbamos", "ibais", "iban"] },
@@ -46,17 +49,17 @@ const VERBOS = [
   { inf: "dar", fr: "donner",
     pres: ["doy", "das", "da", "damos", "dais", "dan"],
     pret: ["di", "diste", "dio", "dimos", "disteis", "dieron"] },
-  { inf: "ver", fr: "voir",
+  { inf: "ver", fr: "voir", part: "visto",
     pres: ["veo", "ves", "ve", "vemos", "veis", "ven"],
     pret: ["vi", "viste", "vio", "vimos", "visteis", "vieron"],
     imp: ["veía", "veías", "veía", "veíamos", "veíais", "veían"] },
   { inf: "tener", fr: "avoir, posséder", yo: "tengo", dip: "ie", pret: "tuv", fut: "tendr" },
   { inf: "venir", fr: "venir", yo: "vengo", dip: "ie", pret: "vin", fut: "vendr" },
-  { inf: "decir", fr: "dire", yo: "digo", dip: "i", pret: "dij", fut: "dir" },
-  { inf: "hacer", fr: "faire", yo: "hago", pret: "hic", fut: "har" },
-  { inf: "poder", fr: "pouvoir", dip: "ue", pret: "pud", fut: "podr" },
+  { inf: "decir", fr: "dire", yo: "digo", dip: "i", pret: "dij", fut: "dir", part: "dicho" },
+  { inf: "hacer", fr: "faire", yo: "hago", pret: "hic", fut: "har", part: "hecho" },
+  { inf: "poder", fr: "pouvoir", dip: "ue", pret: "pud", fut: "podr", ger: "pudiendo" },
   { inf: "querer", fr: "vouloir, aimer", dip: "ie", pret: "quis", fut: "querr" },
-  { inf: "poner", fr: "mettre", yo: "pongo", pret: "pus", fut: "pondr" },
+  { inf: "poner", fr: "mettre", yo: "pongo", pret: "pus", fut: "pondr", part: "puesto" },
   { inf: "saber", fr: "savoir", yo: "sé", pret: "sup", fut: "sabr" },
   { inf: "caber", fr: "tenir dans, rentrer", yo: "quepo", pret: "cup", fut: "cabr" },
   { inf: "salir", fr: "sortir", yo: "salgo", fut: "saldr" },
@@ -65,7 +68,7 @@ const VERBOS = [
   { inf: "caer", fr: "tomber", yo: "caigo" },
   { inf: "oír", fr: "entendre", pres: ["oigo", "oyes", "oye", "oímos", "oís", "oyen"] },
   { inf: "andar", fr: "marcher", pret: "anduv" },
-  { inf: "reír", fr: "rire",
+  { inf: "reír", fr: "rire", ger: "riendo",
     pres: ["río", "ríes", "ríe", "reímos", "reís", "ríen"],
     pret: ["reí", "reíste", ["rio", "rió"], "reímos", "reísteis", "rieron"] },
   { inf: "conducir", fr: "conduire" },
@@ -129,13 +132,13 @@ const VERBOS = [
   { inf: "volar", fr: "voler (dans les airs)", dip: "ue" },
   { inf: "almorzar", fr: "déjeuner", dip: "ue" },
   { inf: "acostarse", fr: "se coucher", dip: "ue" },
-  { inf: "volver", fr: "revenir, retourner", dip: "ue" },
+  { inf: "volver", fr: "revenir, retourner", dip: "ue", part: "vuelto" },
   { inf: "volverse", fr: "devenir, se retourner" },
-  { inf: "devolver", fr: "rendre (un objet)", dip: "ue" },
+  { inf: "devolver", fr: "rendre (un objet)", dip: "ue", part: "devuelto" },
   { inf: "mover", fr: "bouger, déplacer", dip: "ue" },
-  { inf: "resolver", fr: "résoudre", dip: "ue" },
+  { inf: "resolver", fr: "résoudre", dip: "ue", part: "resuelto" },
   { inf: "dormir", fr: "dormir", dip: "ue" },
-  { inf: "morir", fr: "mourir", dip: "ue" },
+  { inf: "morir", fr: "mourir", dip: "ue", part: "muerto" },
   { inf: "jugar", fr: "jouer", dip: "ue" },
   { inf: "oler", fr: "sentir (une odeur)", dip: "ue" },
 
@@ -219,19 +222,19 @@ const VERBOS = [
   { inf: "deber", fr: "devoir" },
   { inf: "prometer", fr: "promettre" },
   { inf: "responder", fr: "répondre" },
-  { inf: "romper", fr: "casser, rompre" },
+  { inf: "romper", fr: "casser, rompre", part: "roto" },
   { inf: "vivir", fr: "vivre" },
-  { inf: "escribir", fr: "écrire" },
-  { inf: "abrir", fr: "ouvrir" },
+  { inf: "escribir", fr: "écrire", part: "escrito" },
+  { inf: "abrir", fr: "ouvrir", part: "abierto" },
   { inf: "recibir", fr: "recevoir" },
   { inf: "decidir", fr: "décider" },
   { inf: "subir", fr: "monter" },
   { inf: "permitir", fr: "permettre" },
   { inf: "partir", fr: "partir, couper" },
-  { inf: "cubrir", fr: "couvrir" },
+  { inf: "cubrir", fr: "couvrir", part: "cubierto" },
   { inf: "asistir", fr: "assister" },
   { inf: "sufrir", fr: "souffrir" },
-  { inf: "describir", fr: "décrire" },
+  { inf: "describir", fr: "décrire", part: "descrito" },
 ];
 
 /*
